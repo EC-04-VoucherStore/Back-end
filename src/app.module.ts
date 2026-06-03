@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 // import { AppController } from './app.controller';
 // import { AppService } from './app.service';
 
-// import { SupabaseModule } from './supabase/supabase.module';
+import { SupabaseModule } from './supabase/supabase.module';
 import { VouchersModule } from './modules/vouchers/vouchers.module';
 import { ConfigModule } from '@nestjs/config';
 
@@ -12,12 +12,12 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    // SupabaseModule,
+
+    SupabaseModule,
     VouchersModule,
   ],
 
-  // controllers: [AppController],
-
-  // providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
