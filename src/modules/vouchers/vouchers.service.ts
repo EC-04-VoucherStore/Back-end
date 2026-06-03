@@ -16,17 +16,17 @@ export class VouchersService {
       throw new BadRequestException('GiaBan phải <= GiaGoc');
     }
     if (dto.NgayBD >= dto.NgayKT) {
-        throw new BadRequestException('NgayBD phải < NgayKT');
+      throw new BadRequestException('NgayBD phải < NgayKT');
     }
     if (dto.NgayKT <= new Date()) {
-        throw new BadRequestException('NgayKT phải > ngày hiện tại');
+      throw new BadRequestException('NgayKT phải > ngày hiện tại');
     }
     const voucher = {
       MaVoucher: this.currentId++,
       ...dto,
       TrangThai: VoucherStatus.DRAFT,
-      SoLuongDaBan: 0,  
-     };
+      SoLuongDaBan: 0,
+    };
 
     // const {data, error} = await this.supabase.client
     //   .from('vouchers')
@@ -36,7 +36,7 @@ export class VouchersService {
     // if (error) {
     //   throw new BadRequestException(error.message);
     // };
-     
+
     this.vouchers.push(voucher);
     console.log(this.vouchers);
 
@@ -48,7 +48,7 @@ export class VouchersService {
   }
 
   getAllVouchers() {
-    // const {data, error} = 
+    // const {data, error} =
     // await this.supabase.client
     //   .from('vouchers')
     //   .select('*');
@@ -64,7 +64,7 @@ export class VouchersService {
   }
 
   getVoucherbyID(id: string) {
-    const voucher = this.vouchers.find(v => v.MaVoucher === parseInt(id));
+    const voucher = this.vouchers.find((v) => v.MaVoucher === parseInt(id));
 
     if (!voucher) {
       throw new BadRequestException('Voucher không tồn tại');
@@ -77,14 +77,18 @@ export class VouchersService {
   }
 
   updateVoucher(id: string, payload: any) {
-    const voucher = this.vouchers.find(v => v.MaVoucher === parseInt(id));
+    const voucher = this.vouchers.find((v) => v.MaVoucher === parseInt(id));
     if (!voucher) {
       throw new BadRequestException('Voucher không tồn tại');
-    } 
+    }
 
     Object.assign(voucher, payload);
 
-    if (voucher.TrangThai === VoucherStatus.ACTIVE || voucher.TrangThai === VoucherStatus.REJECTED || voucher.TrangThai === VoucherStatus.SCHEDULED) {
+    if (
+      voucher.TrangThai === VoucherStatus.ACTIVE ||
+      voucher.TrangThai === VoucherStatus.REJECTED ||
+      voucher.TrangThai === VoucherStatus.SCHEDULED
+    ) {
       voucher.TrangThai = VoucherStatus.PENDING;
     }
 
@@ -102,7 +106,7 @@ export class VouchersService {
   }
 
   removeVoucher(id: string) {
-    const index = this.vouchers.findIndex(v => v.MaVoucher === parseInt(id));   
+    const index = this.vouchers.findIndex((v) => v.MaVoucher === parseInt(id));
 
     if (index === -1) {
       throw new BadRequestException('Voucher không tồn tại');
@@ -116,8 +120,8 @@ export class VouchersService {
     };
   }
 
-  submitVoucher (id: string) {
-    const voucher = this.vouchers.find(v => v.MaVoucher === parseInt(id));
+  submitVoucher(id: string) {
+    const voucher = this.vouchers.find((v) => v.MaVoucher === parseInt(id));
 
     if (!voucher) {
       throw new BadRequestException('Voucher không tồn tại');
@@ -141,32 +145,38 @@ export class VouchersService {
 
     // Lọc Tên Voucher
     if (query.TenVoucher) {
-      results = results.filter(v => v.TenVoucher.toLowerCase().includes(query.TenVoucher.toLowerCase()));
+      results = results.filter((v) =>
+        v.TenVoucher.toLowerCase().includes(query.TenVoucher.toLowerCase()),
+      );
     }
 
     // Lọc Trạng Thái
     if (query.TrangThai) {
-      results = results.filter(v => v.TrangThai === query.TrangThai);
-    }  
+      results = results.filter((v) => v.TrangThai === query.TrangThai);
+    }
 
     // Lọc Giá Thấp nhất
     if (query.GiaMin) {
-      results = results.filter(v => v.GiaBan >= query.GiaMin);
+      results = results.filter((v) => v.GiaBan >= query.GiaMin);
     }
 
     // Lọc Giá Cao nhất
     if (query.GiaMax) {
-      results = results.filter(v => v.GiaBan <= query.GiaMax);
+      results = results.filter((v) => v.GiaBan <= query.GiaMax);
     }
 
     // Lọc Tỉ lệ Giảm Giá
     if (query.TiLeGiamMin) {
-      results = results.filter(v => ((v.GiaGoc - v.GiaBan) / v.GiaGoc * 100) >= query.TiLeGiamMin);
+      results = results.filter(
+        (v) => ((v.GiaGoc - v.GiaBan) / v.GiaGoc) * 100 >= query.TiLeGiamMin,
+      );
     }
 
     // Lọc Chi nhánh
     if (query.ChiNhanh) {
-      results = results.filter(v => v.ChiNhanhApDung?.includes(query.ChiNhanh));
+      results = results.filter((v) =>
+        v.ChiNhanhApDung?.includes(query.ChiNhanh),
+      );
     }
 
     return {
@@ -174,10 +184,10 @@ export class VouchersService {
       total: results.length,
       data: results,
     };
-  } 
+  }
 
-  approveVoucher (id: string) {
-    const voucher = this.vouchers.find(v => v.MaVoucher === parseInt(id));
+  approveVoucher(id: string) {
+    const voucher = this.vouchers.find((v) => v.MaVoucher === parseInt(id));
 
     if (!voucher) {
       throw new BadRequestException('Voucher không tồn tại');
@@ -201,8 +211,8 @@ export class VouchersService {
     };
   }
 
-  rejectVoucher (id: string) {
-    const voucher = this.vouchers.find(v => v.MaVoucher === parseInt(id));      
+  rejectVoucher(id: string) {
+    const voucher = this.vouchers.find((v) => v.MaVoucher === parseInt(id));
 
     if (!voucher) {
       throw new BadRequestException('Voucher không tồn tại');
