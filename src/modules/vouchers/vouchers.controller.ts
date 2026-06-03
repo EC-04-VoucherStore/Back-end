@@ -8,9 +8,11 @@ import {
   Delete,
   Query,
 } from '@nestjs/common';
-
 import { VouchersService } from './vouchers.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
+import { UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Multer } from 'multer';
 
 @Controller('vouchers')
 export class VouchersController {
@@ -22,15 +24,18 @@ export class VouchersController {
   }
 
   @Get('search/filter')
-  searchVouchers( 
-     @Query() query: any,
-  ) {
+  searchVouchers(@Query() query: any) {
     return this.vouchersService.searchVoucher(query);
-  } 
+  }
 
   @Get(':id')
   getVoucherByID(@Param('id') id: string) {
     return this.vouchersService.getVoucherbyID(id);
+  }
+
+  @Get('branches/:maDT')
+  getBranches(@Param('maDT') maDT: string) {
+    return this.vouchersService.getBranches(maDT);
   }
 
   @Post()
@@ -51,6 +56,12 @@ export class VouchersController {
   @Post(':id/reject')
   rejectVoucher(@Param('id') id: string) {
     return this.vouchersService.rejectVoucher(id);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadBanner(@UploadedFile() file: Express.Multer.File) {
+    return this.vouchersService.uploadBanner(file);
   }
 
   @Put(':id')

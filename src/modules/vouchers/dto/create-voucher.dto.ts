@@ -1,16 +1,23 @@
-import {
-  IsDateString,
-  IsNumber,
-  IsString,
-} from 'class-validator';
+import { IsDateString, IsNumber, IsString } from 'class-validator';
 
 export class CreateVoucherDto {
-
   @IsString()
   TenVoucher!: string;
 
   @IsString()
+  MaPL!: string;
+
+  @IsString()
+  MaTaxon!: string;
+
+  @IsString()
   MoTa!: string;
+
+  @IsString()
+  MaDT!: string;
+
+  @IsString()
+  bannerUrl!: string;
 
   @IsNumber()
   GiaGoc!: number;

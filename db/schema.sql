@@ -216,6 +216,6 @@ CREATE TABLE public.lich_su_giao_dich (
     trang_thai_thanh_toan text,
     ma_giao_dich_cung_cap text,
     ma_loi text,
-    thoi_ gian_thuc_hien timestamptz DEFAULT now() NOT NULL,
+    thoi_gian_thuc_hien timestamptz DEFAULT now() NOT NULL,
     CONSTRAINT fk_lsgd_donhang FOREIGN KEY (ma_dh) REFERENCES public.don_hang(ma_dh) ON DELETE CASCADE
 );
