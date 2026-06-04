@@ -88,6 +88,15 @@ export class VouchersService {
     };
   }
 
+  private extractPathFromUrl(url: string): string | null {
+    try {
+      const parts = url.split('/storage/v1/object/public/images/');
+      return parts[1] || null;
+    } catch {
+      return null;
+    }
+  }
+
   async updateVoucher(id: string, payload: any) {
     const { data: voucher, error: findError } = await this.supabaseService
       .getClient()
@@ -98,6 +107,17 @@ export class VouchersService {
 
     if (findError || !voucher) {
       throw new BadRequestException('Voucher không tồn tại');
+    }
+
+    if (payload.banner_url && payload.banner_url !== voucher.banner_url) {
+      const oldPath = this.extractPathFromUrl(voucher.banner_url);
+
+      if (oldPath) {
+        await this.supabaseService
+          .getClient()
+          .storage.from('images')
+          .remove([oldPath]);
+      }
     }
 
     if (
@@ -131,8 +151,23 @@ export class VouchersService {
   }
 
   async removeVoucher(id: string) {
-    const { error } = await this.supabaseService
-      .getClient()
+    const client = this.supabaseService.getClient();
+
+    const { data: voucher } = await client
+      .from('voucher')
+      .select('*')
+      .eq('ma_voucher', id)
+      .single();
+
+    if (voucher?.banner_url) {
+      const oldPath = this.extractPathFromUrl(voucher.banner_url);
+
+      if (oldPath) {
+        await client.storage.from('images').remove([oldPath]);
+      }
+    }
+
+    const { error } = await client
       .from('voucher')
       .delete()
       .eq('ma_voucher', id);
@@ -328,11 +363,11 @@ export class VouchersService {
   }
 
   async uploadBanner(file: Express.Multer.File) {
-    const fileName = Date.now() + '-' + file.originalname;
+    const fileName = `banner-url/${Date.now()}-${file.originalname}`;
 
     const { error } = await this.supabaseService
       .getClient()
-      .storage.from('voucher-banners')
+      .storage.from('images')
       .upload(fileName, file.buffer, {
         contentType: file.mimetype,
       });
@@ -345,7 +380,7 @@ export class VouchersService {
       data: { publicUrl },
     } = this.supabaseService
       .getClient()
-      .storage.from('voucher-banners')
+      .storage.from('images')
       .getPublicUrl(fileName);
 
     return {
