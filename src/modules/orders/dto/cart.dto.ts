@@ -13,7 +13,7 @@ export class AddToCartDto {
   @Type(() => Number) // Tự động ép kiểu sang Number đề phòng trường hợp client gửi string '2'
   @IsInt({ message: 'Số lượng mua phải là số nguyên' })
   @Min(1, { message: 'Số lượng mua tối thiểu là 1' })
-  so_luong_mua?: number = 1; // Gán giá trị mặc định là 1 nếu client không truyền
+  so_luong_mua: number = 1; // Gán giá trị mặc định là 1 nếu client không truyền
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { RedisService } from '../../common/redis/redis.service';
+import { RedisService } from '../../../common/redis/redis.service';
 import { AddToCartDto, UpdateCartItemQuantityDto } from '../dto/cart.dto';
 
 @Injectable()
@@ -64,7 +64,7 @@ export class CartService {
   async getCart(maKh: string) {
     const cartKey = this.getCartKey(maKh);
     const client = this.redisService.getClient();
-    const cartData = await client.hgetall(cartKey);
+    const cartData: Record<string, string> = await client.hgetall(cartKey);
     
     return Object.entries(cartData).map(([maVoucher, soLuong]) => ({
       ma_voucher: maVoucher,

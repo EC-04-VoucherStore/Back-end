@@ -17,8 +17,8 @@ export class CartSyncService {
     private readonly cartService: CartService,
   ) {}
 
-  // Chạy tự động mỗi 15 phút. Bạn có thể đổi thành EVERY_5_MINUTES nếu muốn
-  @Cron(CronExpression.EVERY_15_MINUTES)
+  // Chạy tự động mỗi 30 phút. Bạn có thể đổi thành EVERY_5_MINUTES nếu muốn
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async handleCronSyncCarts() {
     this.logger.log('Bắt đầu đồng bộ giỏ hàng từ Redis xuống Database...');
     const client = this.redisService.getClient();
