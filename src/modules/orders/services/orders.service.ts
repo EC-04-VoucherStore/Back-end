@@ -4,6 +4,7 @@ import { SupabaseService } from '../../../common/supabase/supabase.service';
 import { RedisService } from '../../../common/redis/redis.service';
 import { CreateOrderDto } from '../dto/order.dto';
 import { TrangThaiThanhToan } from '../interfaces/orders.interface';
+import { CreateTransactionHistoryDto } from '../dto/order.dto';
 import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto'; // Thư viện lõi sinh chuỗi bảo mật của Node.js
 
@@ -136,7 +137,48 @@ export class OrderService {
       expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // Link thanh toán hết hạn sau 15 phút
     };
   }
+
+  /**
+   * XỬ LÝ KẾT QUẢ TRẢ VỀ TỪ CỔNG THANH TOÁN (WEBHOOK/IPN)
+   */
+  async confirmPaymentCallback(dto: CreateTransactionHistoryDto) {
+    const supabase = this.supabaseService.getClient();
+
+    // 1. Cập nhật trạng thái đơn hàng thành DA_THANH_TOAN
+    const { error: updateOrderError } = await supabase
+      .from('don_hang')
+      .update({ trang_thai_thanh_toan: dto.trang_thai_thanh_toan || 'DA_THANH_TOAN' })
+      .eq('ma_dh', dto.ma_dh);
+
+    if (updateOrderError) {
+      throw new InternalServerErrorException('Không thể cập nhật trạng thái đơn hàng');
+    }
+
+    // 2. Ghi nhận vào bảng lich_su_giao_dich
+    const { error: insertHistoryError } = await supabase
+      .from('lich_su_giao_dich')
+      .insert({
+        ma_ls: `LS-${uuidv4().substring(0, 8).toUpperCase()}`,
+        ma_dh: dto.ma_dh,
+        so_tien: dto.so_tien,
+        phuong_thuc_thanh_toan: dto.phuong_thuc_thanh_toan,
+        trang_thai_thanh_toan: dto.trang_thai_thanh_toan || 'DA_THANH_TOAN',
+        ma_giao_dich_cung_cap: dto.ma_giao_dich_cung_cap || 'MOCK_TRANS_123',
+        ma_loi: dto.ma_loi || null,
+        thoi_gian_thuc_hien: new Date().toISOString()
+      });
+
+    if (insertHistoryError) {
+      throw new InternalServerErrorException('Không thể lưu lịch sử giao dịch');
+    }
+
+    return {
+      ma_dh: dto.ma_dh,
+      trang_thai: dto.trang_thai_thanh_toan || 'DA_THANH_TOAN'
+    };
+  }
 }
+
 
 
 //Còn 2 đoạn phải chỉnh lại là đoạn giả lập luồng thanh toán ở hàm create order và luồng gọi API thanh toán của bên thứ 3
