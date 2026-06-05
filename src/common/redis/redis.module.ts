@@ -1,5 +1,6 @@
 import { Module, Global } from '@nestjs/common';
 import Redis from 'ioredis';
+import { RedisService } from './redis.service';
 
 @Global() // Đảm bảo Module này có thể dùng ở mọi nơi mà không cần import lại
 @Module({
@@ -14,7 +15,8 @@ import Redis from 'ioredis';
         });
       },
     },
+    RedisService
   ],
-  exports: ['REDIS_CLIENT'], // Export để các service khác có thể inject
+  exports: ['REDIS_CLIENT', RedisService], // Export để các service khác có thể inject
 })
 export class RedisModule {}
