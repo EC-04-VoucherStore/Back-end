@@ -1,224 +1,311 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html class="light" lang="vi">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Hồ sơ cá nhân - VoucherHub</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-    <script id="tailwind-config">
-        tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              "colors": {
-                "primary": "#004ac6",
-                "on-primary": "#ffffff",
-                "background": "#f8f9ff",
-                "surface": "#f8f9ff",
-                "on-surface": "#0b1c30",
-                "outline-variant": "#c3c6d7",
-                "outline": "#737686",
-                "error": "#ba1a1a",
-                "surface-container-lowest": "#ffffff",
-                "surface-container-low": "#eff4ff",
-                "surface-container": "#e5eeff"
-              }
-            }
-          }
-        }
-      </script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hồ sơ cá nhân - VoucherHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{
+      "primary-container":"#2563eb","inverse-surface":"#213145","secondary":"#006c49",
+      "on-primary":"#ffffff","primary-fixed":"#dbe1ff","secondary-container":"#6cf8bb",
+      "surface-container-low":"#eff4ff","background":"#f8f9ff","error":"#ba1a1a",
+      "outline":"#737686","surface-container-high":"#dce9ff","primary":"#004ac6",
+      "surface":"#f8f9ff","on-surface":"#0b1c30","on-surface-variant":"#434655",
+      "on-primary-container":"#eeefff","outline-variant":"#c3c6d7",
+      "surface-container-lowest":"#ffffff","surface-container":"#e5eeff",
+      "error-container":"#ffdad6","on-error-container":"#93000a",
+      "secondary-fixed":"#6ffbbe","on-secondary-container":"#00714d"
+    }}}
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .input-glow:focus { box-shadow: 0 0 0 3px rgba(37,99,235,0.2); border-color: #2563eb; }
+</style>
 </head>
-<body class="bg-surface text-on-surface font-sans antialiased min-h-screen flex flex-col pt-16">
-    <!-- Header -->
-    <header class="bg-white shadow-sm fixed top-0 left-0 w-full z-50 flex items-center h-16 border-b border-outline-variant/30">
-        <div class="w-full max-w-[1280px] mx-auto px-6 flex justify-between items-center">
-            <div class="flex items-center gap-6">
-                <a class="text-xl font-bold text-primary" href="home.html">VoucherHub</a>
-            </div>
-            
-            <nav class="hidden md:flex items-center gap-6">
-                <a class="text-on-surface-variant hover:text-primary transition-colors text-sm" href="home.html">Trang chủ</a>
-                <a class="text-on-surface-variant hover:text-primary transition-colors text-sm" href="wallet.html">Ví Voucher</a>
-            </nav>
-            
-            <div class="flex items-center gap-4">
-                <a class="text-sm font-semibold text-primary" href="home.html">Quay lại trang chủ</a>
-            </div>
-        </div>
-    </header>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
 
-    <!-- Main Content -->
-    <main class="flex-grow max-w-[1280px] mx-auto w-full px-6 py-8">
-        <div class="flex flex-col lg:flex-row gap-8">
-            <!-- Sidebar -->
-            <aside class="w-full lg:w-64 flex-shrink-0">
-                <div class="bg-white rounded-xl p-5 shadow-sm border border-outline-variant/30 flex flex-col items-center">
-                    <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-primary mb-4">
-                        <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxYyDS7WVb__iZiLCmeWtiABRQWW4MLkC0dYzZLlS-EKgTk1__5gjIG5jPTuHHJeqUrkqoIYW2teLTJWMnnC8tfyVNl1VhliYokzGTdBeV1Mqz9RQeMCz1eGhwIokkwbc9a23JKMRuEnD4Zqw-UdlDzPJO1HeZ7OlRrpHOotrk8ziTJ0JyQO-bijb9VG7oW_NjkxZqqpMrY9RCL8RmM5f8ke2tndGc1C6mw1JEBLD0egFfBCJYpgbveewLzG4PIEoNK8MzNxJlVAoU" alt="Profile avatar"/>
-                    </div>
-                    <h2 id="side-name" class="font-bold text-base text-on-surface text-center mb-1">Đang tải...</h2>
-                    <p id="side-email" class="text-xs text-outline text-center mb-6">email@domain.com</p>
-                    
-                    <button class="w-full py-2 border border-error text-error hover:bg-error/5 font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-1" onclick="logoutUser()">
-                        <span class="material-symbols-outlined text-[16px]">logout</span> Đăng xuất
+<!-- Header -->
+<header class="bg-surface shadow-sm fixed top-0 left-0 w-full z-50 border-b border-outline-variant/30">
+  <div class="max-w-[1280px] mx-auto px-6 h-16 flex justify-between items-center">
+    <a class="text-xl font-bold text-primary" href="home.html">VoucherHub</a>
+    <nav class="hidden md:flex items-center gap-6">
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="home.html">Trang chủ</a>
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="wallet.html">Ví Voucher</a>
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="orders.html">Đơn hàng</a>
+    </nav>
+    <div class="flex items-center gap-3">
+      <a href="cart.html" class="p-2 text-on-surface-variant hover:text-primary relative">
+        <span class="material-symbols-outlined">shopping_cart</span>
+      </a>
+      <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-sm cursor-pointer" id="user-avatar">?</div>
+    </div>
+  </div>
+</header>
+
+<div class="flex min-h-screen pt-16">
+  <!-- Sidebar Desktop -->
+  <aside class="hidden md:flex flex-col p-4 gap-1 bg-surface-container-lowest shadow-md w-60 flex-shrink-0 border-r border-outline-variant/30">
+    <div class="mb-8 px-4 pt-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-bold text-xl" id="side-avatar">?</div>
+        <div>
+          <p class="text-sm font-semibold text-on-surface" id="side-name">Đang tải...</p>
+          <p class="text-xs text-on-surface-variant" id="side-email">email@...</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex flex-col gap-1 flex-1">
+      <button id="tab-btn-profile" onclick="switchTab('profile')"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-primary-container text-on-primary-container font-semibold">
+        <span class="material-symbols-outlined">person</span><span>Hồ sơ</span>
+      </button>
+      <button id="tab-btn-password" onclick="switchTab('password')"
+        class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-on-surface-variant hover:bg-surface-container-high">
+        <span class="material-symbols-outlined">lock_reset</span><span>Đổi mật khẩu</span>
+      </button>
+      <a href="orders.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high">
+        <span class="material-symbols-outlined">receipt_long</span><span>Lịch sử đơn hàng</span>
+      </a>
+      <a href="wallet.html" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-surface-container-high">
+        <span class="material-symbols-outlined">confirmation_number</span><span>Ví Voucher</span>
+      </a>
+      <button onclick="logoutUser()" class="mt-auto flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-on-surface-variant hover:text-error hover:bg-error-container/30 transition-colors">
+        <span class="material-symbols-outlined">logout</span><span>Đăng xuất</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto bg-background">
+    <div class="max-w-4xl mx-auto p-6 md:p-8">
+      <!-- Header -->
+      <div class="mb-8 flex justify-between items-end">
+        <div>
+          <h1 id="tab-title" class="text-3xl font-bold text-on-surface">Hồ sơ cá nhân</h1>
+          <p id="tab-sub" class="text-sm text-on-surface-variant mt-2">Quản lý thông tin cá nhân của bạn.</p>
+        </div>
+        <div class="hidden sm:flex gap-2">
+          <span class="px-3 py-1 bg-surface-container-high text-primary text-xs font-bold rounded-full flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">verified_user</span>Khách hàng
+          </span>
+          <span class="px-3 py-1 bg-[#dcfce7] text-[#166534] text-xs font-bold rounded-full flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-[#166534]"></span>Hoạt động
+          </span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Avatar Card -->
+        <div class="md:col-span-1 bg-white rounded-xl shadow-sm p-6 flex flex-col items-center border border-outline-variant/30">
+          <div class="w-28 h-28 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-bold text-4xl mb-4 ring-4 ring-surface-container" id="avatar-big">?</div>
+          <h3 class="text-lg font-semibold text-on-surface text-center" id="card-name">Đang tải...</h3>
+          <p class="text-sm text-on-surface-variant text-center mb-6" id="card-email">--</p>
+          <div class="w-full border-t border-outline-variant/30 pt-4">
+            <p class="text-xs text-on-surface-variant">Tài khoản</p>
+            <p class="text-sm font-medium text-on-surface mt-1">Khách hàng VoucherHub</p>
+          </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="md:col-span-2">
+          <!-- Tab: Hồ sơ -->
+          <div id="tab-profile" class="bg-white rounded-xl shadow-sm p-6 md:p-8 border border-outline-variant/30">
+            <h3 class="text-xl font-semibold text-on-surface mb-6 border-b border-outline-variant/30 pb-4">Thông tin cá nhân</h3>
+            <form id="form-profile" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-on-surface-variant" for="profile-name">Họ và tên</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">person</span>
+                    <input class="input-glow w-full pl-10 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm focus:outline-none" id="profile-name" type="text" required placeholder="Nguyễn Văn A"/>
+                  </div>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-on-surface-variant" for="profile-sdt">Số điện thoại</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">phone</span>
+                    <input class="input-glow w-full pl-10 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm focus:outline-none" id="profile-sdt" type="tel" placeholder="0901234567"/>
+                  </div>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-on-surface-variant">Email</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">mail</span>
+                  <input class="w-full pl-10 pr-3 py-2.5 bg-surface-container-low border border-outline-variant rounded-lg text-sm text-on-surface-variant cursor-not-allowed" id="profile-email" type="email" readonly/>
+                </div>
+                <p class="text-xs text-outline">* Email không thể thay đổi để đảm bảo bảo mật.</p>
+              </div>
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-on-surface-variant" for="profile-address">Địa chỉ</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-3 text-outline text-[20px]">location_on</span>
+                  <textarea class="input-glow w-full pl-10 pr-3 py-2.5 bg-white border border-outline-variant rounded-lg text-sm focus:outline-none resize-none" id="profile-address" rows="3" placeholder="123 Đường ABC, Quận 1, TP.HCM"></textarea>
+                </div>
+              </div>
+              <div class="flex justify-end pt-4 border-t border-outline-variant/30">
+                <button class="px-8 py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:brightness-110 transition-all shadow-sm active:scale-95" type="submit">Lưu thay đổi</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tab: Đổi mật khẩu -->
+          <div id="tab-password" class="hidden bg-white rounded-xl shadow-sm p-6 md:p-8 border border-outline-variant/30">
+            <h3 class="text-xl font-semibold text-on-surface mb-6 border-b border-outline-variant/30 pb-4">Cài đặt mật khẩu</h3>
+            <form id="form-password" class="space-y-6">
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-on-surface-variant" for="pwd-old">Mật khẩu hiện tại</label>
+                <div class="relative">
+                  <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">lock</span>
+                  <input class="input-glow w-full pl-10 pr-12 py-2.5 bg-white border border-outline-variant rounded-lg text-sm focus:outline-none" id="pwd-old" type="password" placeholder="••••••••" required/>
+                  <button type="button" onclick="togglePwd('pwd-old', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary">
+                    <span class="material-symbols-outlined text-[20px]">visibility_off</span>
+                  </button>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-on-surface-variant" for="pwd-new">Mật khẩu mới</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">key</span>
+                    <input class="input-glow w-full pl-10 pr-12 py-2.5 bg-white border border-outline-variant rounded-lg text-sm focus:outline-none" id="pwd-new" type="password" minlength="6" placeholder="Tối thiểu 6 ký tự" required/>
+                    <button type="button" onclick="togglePwd('pwd-new', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary">
+                      <span class="material-symbols-outlined text-[20px]">visibility_off</span>
                     </button>
+                  </div>
                 </div>
-            </aside>
-
-            <!-- Main forms -->
-            <div class="flex-grow flex flex-col gap-6">
-                <!-- Profile Information Card -->
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-outline-variant/30">
-                    <h3 class="font-bold text-base text-primary mb-6 flex items-center gap-2">
-                        <span class="material-symbols-outlined">person</span> Cập nhật thông tin cá nhân
-                    </h3>
-                    
-                    <form id="form-profile" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-outline uppercase" for="profile-email">Địa chỉ Email</label>
-                            <input id="profile-email" class="w-full bg-slate-50 border border-outline-variant/30 text-outline rounded-lg py-2 px-3 text-sm cursor-not-allowed" type="email" readonly/>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-outline uppercase" for="profile-name">Họ và tên</label>
-                            <input id="profile-name" class="w-full border border-outline-variant rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" type="text" required/>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-outline uppercase" for="profile-sdt">Số điện thoại</label>
-                            <input id="profile-sdt" class="w-full border border-outline-variant rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" type="tel"/>
-                        </div>
-                        <div class="flex flex-col gap-1 md:col-span-2">
-                            <label class="text-xs font-bold text-outline uppercase" for="profile-address">Địa chỉ giao hàng/nhận tin</label>
-                            <input id="profile-address" class="w-full border border-outline-variant rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" type="text"/>
-                        </div>
-                        
-                        <div class="md:col-span-2 flex justify-end mt-2">
-                            <button class="bg-primary text-white font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity active:scale-[0.98]" type="submit">
-                                Lưu thay đổi
-                            </button>
-                        </div>
-                    </form>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-on-surface-variant" for="pwd-confirm">Xác nhận mật khẩu mới</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">check_circle</span>
+                    <input class="input-glow w-full pl-10 pr-12 py-2.5 bg-white border border-outline-variant rounded-lg text-sm focus:outline-none" id="pwd-confirm" type="password" placeholder="Nhập lại mật khẩu mới" required/>
+                    <button type="button" onclick="togglePwd('pwd-confirm', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary">
+                      <span class="material-symbols-outlined text-[20px]">visibility_off</span>
+                    </button>
+                  </div>
                 </div>
-
-                <!-- Password Change Card -->
-                <div class="bg-white rounded-xl p-6 shadow-sm border border-outline-variant/30">
-                    <h3 class="font-bold text-base text-primary mb-6 flex items-center gap-2">
-                        <span class="material-symbols-outlined">lock</span> Đổi mật khẩu
-                    </h3>
-                    
-                    <form id="form-password" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-1 md:col-span-2">
-                            <label class="text-xs font-bold text-outline uppercase" for="pwd-old">Mật khẩu hiện tại</label>
-                            <input id="pwd-old" class="w-full border border-outline-variant rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-primary" type="password" required/>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-outline uppercase" for="pwd-new">Mật khẩu mới</label>
-                            <input id="pwd-new" class="w-full border border-outline-variant rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-primary" type="password" required minlength="6"/>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <label class="text-xs font-bold text-outline uppercase" for="pwd-confirm">Xác nhận mật khẩu mới</label>
-                            <input id="pwd-confirm" class="w-full border border-outline-variant rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-primary" type="password" required minlength="6"/>
-                        </div>
-                        
-                        <div class="md:col-span-2 flex justify-end mt-2">
-                            <button class="bg-secondary text-white font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity active:scale-[0.98]" type="submit">
-                                Thay đổi mật khẩu
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+              </div>
+              <div class="flex flex-col gap-1 p-4 bg-surface-container-low rounded-lg text-xs text-on-surface-variant">
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Ít nhất 6 ký tự</span>
+                <span class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span>Nên bao gồm chữ, số và ký tự đặc biệt</span>
+              </div>
+              <div class="flex justify-end pt-4 border-t border-outline-variant/30">
+                <button class="px-8 py-2.5 rounded-full text-sm font-semibold bg-primary text-white hover:brightness-110 transition-all shadow-sm active:scale-95" type="submit">Cập nhật mật khẩu</button>
+              </div>
+            </form>
+          </div>
         </div>
-    </main>
+      </div>
+    </div>
+  </main>
+</div>
 
-    <!-- Footer -->
-    <footer class="bg-white mt-auto border-t border-outline-variant/30 py-6 px-6">
-        <div class="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-on-surface-variant">
-            <span>© 2026 VoucherHub. Bảo lưu mọi quyền.</span>
-        </div>
-    </footer>
+<!-- Mobile Bottom Nav -->
+<nav class="fixed bottom-0 left-0 w-full z-50 md:hidden flex justify-around items-center px-4 py-2 bg-surface shadow-lg border-t border-outline-variant/30">
+  <a href="home.html" class="flex flex-col items-center text-on-surface-variant text-xs"><span class="material-symbols-outlined">home</span>Trang chủ</a>
+  <a href="orders.html" class="flex flex-col items-center text-on-surface-variant text-xs"><span class="material-symbols-outlined">receipt_long</span>Đơn hàng</a>
+  <a href="wallet.html" class="flex flex-col items-center text-on-surface-variant text-xs"><span class="material-symbols-outlined">confirmation_number</span>Ví Voucher</a>
+  <button class="flex flex-col items-center text-primary text-xs font-bold"><span class="material-symbols-outlined">person</span>Hồ sơ</button>
+</nav>
 
-    <!-- Scripts -->
-    <script src="js/api.js"></script>
-    <script>
-        Auth.requireAuth();
+<script src="js/api.js"></script>
+<script>
+  let currentTab = 'profile';
 
-        window.addEventListener('DOMContentLoaded', () => {
-            loadUserProfile();
-        });
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!Auth.requireAuth()) return;
+    await loadUserProfile();
+  });
 
-        async function logoutUser() {
-            try {
-                await apiFetch('/api/auth/logout', { method: 'POST' });
-            } catch(e) {}
-            Auth.clear();
-            window.location.href = 'index.html';
-        }
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-profile').classList.toggle('hidden', tab !== 'profile');
+    document.getElementById('tab-password').classList.toggle('hidden', tab !== 'password');
 
-        // Tải hồ sơ người dùng
-        async function loadUserProfile() {
-            try {
-                const res = await apiFetch('/api/customers/me');
-                const profile = res.data;
-                const user = Auth.getUser();
+    const titles = { profile: ['Hồ sơ cá nhân', 'Quản lý thông tin cá nhân của bạn.'], password: ['Đổi mật khẩu', 'Cập nhật mật khẩu định kỳ để bảo vệ tài khoản.'] };
+    document.getElementById('tab-title').textContent = titles[tab][0];
+    document.getElementById('tab-sub').textContent = titles[tab][1];
 
-                document.getElementById('side-name').textContent = profile.ho_ten;
-                document.getElementById('side-email').textContent = user?.email || 'N/A';
-                
-                document.getElementById('profile-email').value = user?.email || '';
-                document.getElementById('profile-name').value = profile.ho_ten;
-                document.getElementById('profile-sdt').value = profile.sdt || '';
-                document.getElementById('profile-address').value = profile.dia_chi || '';
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-        }
+    ['profile', 'password'].forEach(t => {
+      const btn = document.getElementById('tab-btn-' + t);
+      if (t === tab) btn.className = 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-primary-container text-on-primary-container font-semibold';
+      else btn.className = 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-on-surface-variant hover:bg-surface-container-high';
+    });
+  }
 
-        // Lưu thông tin cá nhân
-        document.getElementById('form-profile').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const ho_ten = document.getElementById('profile-name').value;
-            const sdt = document.getElementById('profile-sdt').value || undefined;
-            const dia_chi = document.getElementById('profile-address').value || undefined;
+  async function loadUserProfile() {
+    try {
+      const res = await apiFetch('/api/customers/me');
+      const profile = res.data;
+      const user = Auth.getUser();
 
-            try {
-                const res = await apiFetch('/api/customers/me', {
-                    method: 'PATCH',
-                    body: JSON.stringify({ ho_ten, sdt, dia_chi })
-                });
+      const initial = (profile.ho_ten?.[0] || user?.email?.[0] || '?').toUpperCase();
+      document.getElementById('user-avatar').textContent = initial;
+      document.getElementById('side-avatar').textContent = initial;
+      document.getElementById('avatar-big').textContent = initial;
+      document.getElementById('side-name').textContent = profile.ho_ten || 'Người dùng';
+      document.getElementById('side-email').textContent = user?.email || '';
+      document.getElementById('card-name').textContent = profile.ho_ten || 'Người dùng';
+      document.getElementById('card-email').textContent = user?.email || '';
+      document.getElementById('profile-name').value = profile.ho_ten || '';
+      document.getElementById('profile-sdt').value = profile.sdt || '';
+      document.getElementById('profile-address').value = profile.dia_chi || '';
+      document.getElementById('profile-email').value = user?.email || '';
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  }
 
-                showToast(res.message || 'Cập nhật thông tin thành công!', 'success');
-                loadUserProfile();
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-        });
+  document.getElementById('form-profile').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const res = await apiFetch('/api/customers/me', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          ho_ten: document.getElementById('profile-name').value,
+          sdt: document.getElementById('profile-sdt').value || undefined,
+          dia_chi: document.getElementById('profile-address').value || undefined,
+        })
+      });
+      showToast(res.message || 'Cập nhật thành công!', 'success');
+      await loadUserProfile();
+    } catch (err) { showToast(err.message, 'error'); }
+  });
 
-        // Đổi mật khẩu
-        document.getElementById('form-password').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const old_password = document.getElementById('pwd-old').value;
-            const new_password = document.getElementById('pwd-new').value;
-            const confirm = document.getElementById('pwd-confirm').value;
+  document.getElementById('form-password').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newPwd = document.getElementById('pwd-new').value;
+    const confirm = document.getElementById('pwd-confirm').value;
+    if (newPwd !== confirm) { showToast('Mật khẩu xác nhận không khớp!', 'error'); return; }
+    try {
+      const res = await apiFetch('/api/customers/me/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ old_password: document.getElementById('pwd-old').value, new_password: newPwd })
+      });
+      showToast(res.message || 'Đổi mật khẩu thành công!', 'success');
+      document.getElementById('form-password').reset();
+    } catch (err) { showToast(err.message, 'error'); }
+  });
 
-            if (new_password !== confirm) {
-                showToast('Mật khẩu mới xác nhận không trùng khớp!', 'error');
-                return;
-            }
+  function togglePwd(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    const icon = btn.querySelector('.material-symbols-outlined');
+    if (inp.type === 'password') { inp.type = 'text'; icon.textContent = 'visibility'; }
+    else { inp.type = 'password'; icon.textContent = 'visibility_off'; }
+  }
 
-            try {
-                const res = await apiFetch('/api/customers/me/change-password', {
-                    method: 'POST',
-                    body: JSON.stringify({ old_password, new_password })
-                });
-
-                showToast(res.message || 'Thay đổi mật khẩu thành công!', 'success');
-                document.getElementById('form-password').reset();
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-        });
-    </script>
+  async function logoutUser() {
+    try { await apiFetch('/api/auth/logout', { method: 'POST' }); } catch(_) {}
+    Auth.clear();
+    window.location.href = 'index.html';
+  }
+</script>
 </body>
 </html>

@@ -44,10 +44,10 @@
             </nav>
             
             <div class="flex items-center gap-4">
-                <button class="text-on-surface-variant hover:text-primary transition-colors relative" onclick="toggleCartDrawer()">
+                <a class="text-on-surface-variant hover:text-primary transition-colors relative" href="cart.html">
                     <span class="material-symbols-outlined">shopping_cart</span>
                     <span id="cart-badge" class="absolute -top-2 -right-2 bg-error text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center hidden">0</span>
-                </button>
+                </a>
                 <div class="w-8 h-8 rounded-full overflow-hidden cursor-pointer border border-outline-variant" onclick="window.location.href='profile.html'">
                     <img id="nav-avatar" alt="Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxYyDS7WVb__iZiLCmeWtiABRQWW4MLkC0dYzZLlS-EKgTk1__5gjIG5jPTuHHJeqUrkqoIYW2teLTJWMnnC8tfyVNl1VhliYokzGTdBeV1Mqz9RQeMCz1eGhwIokkwbc9a23JKMRuEnD4Zqw-UdlDzPJO1HeZ7OlRrpHOotrk8ziTJ0JyQO-bijb9VG7oW_NjkxZqqpMrY9RCL8RmM5f8ke2tndGc1C6mw1JEBLD0egFfBCJYpgbveewLzG4PIEoNK8MzNxJlVAoU"/>
                 </div>
@@ -175,40 +175,7 @@
         </div>
     </main>
 
-    <!-- Cart Drawer Container -->
-    <div id="cart-drawer" class="fixed inset-y-0 right-0 w-full max-w-[400px] bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 border-l border-outline-variant/30 flex flex-col">
-        <div class="p-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-low">
-            <h3 class="font-bold text-lg text-primary flex items-center gap-2">
-                <span class="material-symbols-outlined">shopping_cart</span> Giỏ hàng của bạn
-            </h3>
-            <button class="material-symbols-outlined text-outline hover:text-on-surface" onclick="toggleCartDrawer()">close</button>
-        </div>
-        <div id="cart-items-container" class="flex-grow overflow-y-auto p-4 space-y-4">
-            <!-- Cart items dynamically rendered -->
-        </div>
-        <div class="p-4 border-t border-outline-variant/30 bg-surface-container-lowest">
-            <!-- Payment simulation picker -->
-            <div class="mb-4">
-                <label class="block text-xs font-bold text-outline mb-2">PHƯƠNG THỨC THANH TOÁN (MÔ PHỎNG)</label>
-                <select id="payment-method" class="w-full bg-white border border-outline-variant rounded-lg py-2 px-3 text-sm focus:outline-none">
-                    <option value="chuyen_khoan">Chuyển khoản Ngân hàng (Simulation)</option>
-                    <option value="vi_dien_tu">Ví điện tử MoMo/ZaloPay (Simulation)</option>
-                    <option value="tien_mat">Thanh toán tiền mặt tại quầy (Simulation)</option>
-                </select>
-            </div>
-            <div class="flex justify-between items-baseline mb-4">
-                <span class="text-sm font-semibold">Tổng tiền thanh toán:</span>
-                <span id="cart-total-price" class="text-xl font-bold text-error">0đ</span>
-            </div>
-            <button class="w-full h-11 bg-primary text-white font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2" onclick="handleCheckout()">
-                <span>Xác nhận & Thanh toán ngay</span>
-                <span class="material-symbols-outlined text-[18px]">check_circle</span>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Cart Drawer Backdrop overlay -->
-    <div id="cart-backdrop" class="fixed inset-0 bg-black/40 z-40 hidden" onclick="toggleCartDrawer()"></div>
+
 
     <!-- Footer -->
     <footer class="bg-white mt-auto border-t border-outline-variant/30 py-6 px-6">
@@ -319,65 +286,19 @@
             }
         }
 
-        // Drawer Giỏ Hàng
-        function toggleCartDrawer() {
-            const drawer = document.getElementById('cart-drawer');
-            const backdrop = document.getElementById('cart-backdrop');
-            drawer.classList.toggle('translate-x-full');
-            backdrop.classList.toggle('hidden');
-        }
-
-        // Tải giỏ hàng
+        // Tải thông tin số lượng giỏ hàng để cập nhật badge
         async function loadCart() {
             try {
                 const res = await apiFetch('/api/orders/cart');
                 const badge = document.getElementById('cart-badge');
-                const container = document.getElementById('cart-items-container');
-                const totalText = document.getElementById('cart-total-price');
-
-                if (res.data.length > 0) {
+                if (res.data && res.data.length > 0) {
                     badge.textContent = res.data.length;
                     badge.classList.remove('hidden');
-                    
-                    let html = '';
-                    res.data.forEach(item => {
-                        html += `
-                        <div class="flex gap-3 bg-slate-50 p-3 rounded-lg border border-outline-variant/20 relative group">
-                            <div class="flex-grow">
-                                <h4 class="font-bold text-xs text-on-surface line-clamp-1 mb-1">${item.voucher.ten_voucher}</h4>
-                                <div class="text-[10px] text-outline mb-2">Số lượng mua: <strong class="text-on-surface">${item.so_luong_mua}</strong></div>
-                                <div class="text-xs font-bold text-error">${formatCurrency(item.voucher.gia_ban * item.so_luong_mua)}</div>
-                            </div>
-                            <button class="absolute top-2 right-2 text-outline hover:text-error opacity-0 group-hover:opacity-100 transition-opacity" onclick="removeFromCart('${item.ma_ctgh}')">
-                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                            </button>
-                        </div>
-                        `;
-                    });
-                    container.innerHTML = html;
-                    totalText.textContent = formatCurrency(res.tong_tien);
                 } else {
                     badge.classList.add('hidden');
-                    container.innerHTML = `
-                    <div class="h-full flex flex-col items-center justify-center text-outline text-xs py-12">
-                        <span class="material-symbols-outlined text-4xl mb-2">shopping_bag</span>
-                        Giỏ hàng của bạn đang trống
-                    </div>`;
-                    totalText.textContent = '0đ';
                 }
             } catch (err) {
                 console.error('Không tải được giỏ hàng:', err);
-            }
-        }
-
-        // Xóa item khỏi giỏ
-        async function removeFromCart(maCtgh) {
-            try {
-                await apiFetch(`/api/orders/cart/${maCtgh}`, { method: 'DELETE' });
-                showToast('Đã xóa khỏi giỏ hàng.', 'success');
-                loadCart();
-            } catch (err) {
-                showToast(err.message, 'error');
             }
         }
 
@@ -392,9 +313,8 @@
                         so_luong_mua: qty
                     })
                 });
-                showToast(res.message, 'success');
+                showToast(res.message || 'Đã thêm vào giỏ hàng thành công.', 'success');
                 loadCart();
-                toggleCartDrawer(); // mở giỏ hàng xem luôn
             } catch (err) {
                 showToast(err.message, 'error');
             }
@@ -413,32 +333,8 @@
                     })
                 });
                 
-                // 2. Load lại giỏ
-                await loadCart();
-                
-                // 3. Mở giỏ hàng và thanh toán ngay
-                toggleCartDrawer();
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-        }
-
-        // Đặt hàng
-        async function handleCheckout() {
-            const method = document.getElementById('payment-method').value;
-            try {
-                const res = await apiFetch('/api/orders', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        phuong_thuc_thanh_toan: method,
-                        ten_don_hang: `Mua hàng trên VoucherHub`
-                    })
-                });
-
-                showToast('Thanh toán thành công! Đang chuyển đến ví...', 'success');
-                setTimeout(() => {
-                    window.location.href = 'wallet.html';
-                }, 1500);
+                // 2. Chuyển ngay đến trang giỏ hàng để hoàn thành thanh toán
+                window.location.href = 'cart.html';
             } catch (err) {
                 showToast(err.message, 'error');
             }
