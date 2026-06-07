@@ -15,8 +15,10 @@ class SearchVoucherDto {
     keyword;
     ma_taxon;
     ma_dt;
+    ma_cn;
     gia_min;
     gia_max;
+    giam_min;
     hieu_luc;
     page;
     limit;
@@ -38,6 +40,11 @@ __decorate([
     __metadata("design:type", String)
 ], SearchVoucherDto.prototype, "ma_dt", void 0);
 __decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], SearchVoucherDto.prototype, "ma_cn", void 0);
+__decorate([
     (0, class_validator_1.IsNumberString)(),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
@@ -47,6 +54,11 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", String)
 ], SearchVoucherDto.prototype, "gia_max", void 0);
+__decorate([
+    (0, class_validator_1.IsNumberString)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], SearchVoucherDto.prototype, "giam_min", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsOptional)(),

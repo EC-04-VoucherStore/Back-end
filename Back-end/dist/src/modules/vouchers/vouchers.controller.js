@@ -36,6 +36,9 @@ let VouchersController = class VouchersController {
     getCategories() {
         return this.vouchersService.getCategories();
     }
+    getPublicBranches() {
+        return this.vouchersService.getPublicBranches();
+    }
     getPhanLoai() {
         return this.vouchersService.getPhanLoai();
     }
@@ -50,6 +53,9 @@ let VouchersController = class VouchersController {
     }
     searchVoucherForAdmin(userId, query) {
         return this.vouchersService.searchVoucherForAdmin(query, userId);
+    }
+    getActiveBranches() {
+        return this.vouchersService.getActiveBranches();
     }
     getBranches(maDT) {
         return this.vouchersService.getBranches(maDT);
@@ -99,6 +105,12 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getCategories", null);
 __decorate([
+    (0, common_1.Get)('branches'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getPublicBranches", null);
+__decorate([
     (0, common_1.Get)('phan-loai'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
@@ -137,6 +149,12 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "searchVoucherForAdmin", null);
+__decorate([
+    (0, common_1.Get)('branches/active'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getActiveBranches", null);
 __decorate([
     (0, common_1.Get)('admin/branches/:maDT'),
     (0, common_1.UseGuards)(supabase_auth_guard_1.SupabaseAuthGuard, roles_guard_1.RolesGuard),

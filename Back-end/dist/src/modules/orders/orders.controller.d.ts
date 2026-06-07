@@ -18,6 +18,7 @@ export declare class OrdersController {
                 ngay_kt: any;
                 so_luong_phat_hanh: any;
                 so_luong_da_ban: any;
+                link_voucher_banner: any;
             }[];
         }[];
         tong_tien: number;
@@ -67,6 +68,7 @@ export declare class OrdersController {
                 ten_voucher: any;
                 gia_ban: any;
                 ngay_kt: any;
+                link_voucher_banner: any;
                 doi_tac: {
                     ten_doanh_nghiep: any;
                 }[];
@@ -90,6 +92,7 @@ export declare class OrdersController {
                 gia_ban: any;
                 ngay_kt: any;
                 mo_ta: any;
+                link_voucher_banner: any;
                 doi_tac: {
                     ten_doanh_nghiep: any;
                 }[];

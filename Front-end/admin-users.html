@@ -355,7 +355,7 @@
       }
     }
 
-    function switchTab(tab) {
+    async function switchTab(tab) {
       activeTab = tab;
       const usersBtn = document.getElementById('tab-users-btn');
       const partnersBtn = document.getElementById('tab-partners-btn');
@@ -367,11 +367,13 @@
         partnersBtn.className = 'px-6 py-3 text-on-surface-variant hover:text-primary font-semibold text-sm';
         usersContent.classList.remove('hidden');
         partnersContent.classList.add('hidden');
+        await loadUsers();
       } else {
         partnersBtn.className = 'px-6 py-3 border-b-2 border-primary text-primary font-bold text-sm';
         usersBtn.className = 'px-6 py-3 text-on-surface-variant hover:text-primary font-semibold text-sm';
         partnersContent.classList.remove('hidden');
         usersContent.classList.add('hidden');
+        await loadPendingPartners();
       }
     }
 

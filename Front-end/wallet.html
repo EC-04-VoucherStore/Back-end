@@ -77,18 +77,24 @@
   </div>
 
   <!-- Tabs -->
-  <div class="flex border-b border-outline-variant mb-8 overflow-x-auto no-scrollbar">
-    <button id="tab-chua_su_dung" onclick="switchTab('chua_su_dung')"
-      class="tab-btn px-6 py-4 text-sm font-semibold text-primary border-b-2 border-primary whitespace-nowrap">
-      Chưa sử dụng
-    </button>
-    <button id="tab-da_su_dung" onclick="switchTab('da_su_dung')"
-      class="tab-btn px-6 py-4 text-sm font-medium text-on-surface-variant hover:text-primary whitespace-nowrap">
-      Đã sử dụng
-    </button>
-    <button id="tab-da_huy" onclick="switchTab('da_huy')"
-      class="tab-btn px-6 py-4 text-sm font-medium text-on-surface-variant hover:text-primary whitespace-nowrap">
-      Đã hủy/Hết hạn
+  <div class="flex border-b border-outline-variant mb-8 overflow-x-auto no-scrollbar items-center">
+    <div class="flex flex-1">
+      <button id="tab-chua_su_dung" onclick="switchTab('chua_su_dung')"
+        class="tab-btn px-6 py-4 text-sm font-semibold text-primary border-b-2 border-primary whitespace-nowrap">
+        Chưa sử dụng
+      </button>
+      <button id="tab-da_su_dung" onclick="switchTab('da_su_dung')"
+        class="tab-btn px-6 py-4 text-sm font-medium text-on-surface-variant hover:text-primary whitespace-nowrap">
+        Đã sử dụng
+      </button>
+      <button id="tab-da_huy" onclick="switchTab('da_huy')"
+        class="tab-btn px-6 py-4 text-sm font-medium text-on-surface-variant hover:text-primary whitespace-nowrap">
+        Đã hủy/Hết hạn
+      </button>
+    </div>
+    <button onclick="loadVouchers()" class="flex items-center gap-1.5 px-4 py-2 bg-surface hover:bg-surface-container border border-outline rounded-full text-xs font-semibold transition-colors mr-2 mb-2">
+      <span class="material-symbols-outlined text-sm">refresh</span>
+      Làm mới
     </button>
   </div>
 
@@ -238,11 +244,10 @@
       return;
     }
 
-    container.innerHTML = items.map(item => {
+    container.innerHTML = items.map((item, idx) => {
       const isUnused = item.trang_thai === 'chua_su_dung';
       const isUsed = item.trang_thai === 'da_su_dung';
-      const sampleImg = 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80';
-      const img = item.voucher?.link_voucher_banner || sampleImg;
+      const img = getVoucherImage(item.voucher, idx);
 
       let actionBtn = '';
       if (isUnused) {
@@ -264,8 +269,8 @@
 
       return `
         <div class="group flex flex-col md:flex-row bg-white rounded-xl shadow-sm border border-outline-variant hover:shadow-md hover:border-primary-fixed transition-all overflow-hidden">
-          <div class="w-full md:w-56 h-44 md:h-auto shrink-0 overflow-hidden bg-surface-container">
-            <img src="${img}" alt="${item.voucher?.ten_voucher}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${!isUnused ? 'grayscale-[30%]' : ''}"/>
+          <div class="w-full md:w-56 aspect-[4/3] md:aspect-auto md:min-h-44 shrink-0 overflow-hidden bg-surface-container">
+            <img src="${img}" alt="${item.voucher?.ten_voucher}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${!isUnused ? 'grayscale-[30%]' : ''}" loading="lazy" onerror="handleVoucherImageError(this, '${item.voucher?.ten_voucher || ''}')"/>
           </div>
           <div class="p-5 flex-grow flex flex-col justify-between">
             <div>

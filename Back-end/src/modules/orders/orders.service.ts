@@ -43,7 +43,7 @@ export class OrdersService {
       .from('chi_tiet_gio_hang')
       .select(`
         ma_ctgh, so_luong_mua,
-        voucher ( ma_voucher, ten_voucher, gia_goc, gia_ban, ngay_kt, so_luong_phat_hanh, so_luong_da_ban )
+        voucher ( ma_voucher, ten_voucher, gia_goc, gia_ban, ngay_kt, so_luong_phat_hanh, so_luong_da_ban, link_voucher_banner )
       `)
       .eq('ma_kh', maKh);
 
@@ -254,7 +254,7 @@ export class OrdersService {
       .from('voucher_phat_hanh')
       .select(`
         ma_voucher_code, trang_thai, ngay_su_dung, chuoi_ma_bao_mat,
-        voucher ( ma_voucher, ten_voucher, gia_ban, ngay_kt, doi_tac ( ten_doanh_nghiep ) ),
+        voucher ( ma_voucher, ten_voucher, gia_ban, ngay_kt, link_voucher_banner, doi_tac ( ten_doanh_nghiep ) ),
         don_hang ( ma_dh, ngay_tao_don )
       `)
       .in('ma_dh', maDhList)
@@ -287,7 +287,7 @@ export class OrdersService {
       .from('voucher_phat_hanh')
       .select(`
         ma_voucher_code, trang_thai, ngay_su_dung, chuoi_ma_bao_mat,
-        voucher ( ma_voucher, ten_voucher, gia_goc, gia_ban, ngay_kt, mo_ta,
+        voucher ( ma_voucher, ten_voucher, gia_goc, gia_ban, ngay_kt, mo_ta, link_voucher_banner,
           doi_tac ( ten_doanh_nghiep ), chi_nhanh: doi_tac ( chi_nhanh ( ten_chi_nhanh, dia_chi ) ) ),
         don_hang ( ma_dh, ngay_tao_don, phuong_thuc_thanh_toan )
       `)
@@ -541,4 +541,3 @@ export class OrdersService {
     };
   }
 }
-

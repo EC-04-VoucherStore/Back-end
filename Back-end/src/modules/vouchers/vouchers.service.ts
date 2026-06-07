@@ -49,8 +49,53 @@ export class VouchersService {
     const page = parseInt(dto.page ?? '1', 10);
     const limit = parseInt(dto.limit ?? '12', 10);
     const from = (page - 1) * limit;
-    const to = from + limit - 1;
     const now = new Date().toISOString();
+
+    let voucherIdsByBranch: string[] | null = null;
+    if (dto.ma_cn) {
+      const { data: voucherBranches, error: branchError } = await client
+        .from('voucher_chi_nhanh')
+        .select('ma_voucher')
+        .eq('ma_cn', dto.ma_cn);
+
+      if (branchError) throw new NotFoundException(branchError.message);
+
+      voucherIdsByBranch = [
+        ...new Set((voucherBranches ?? []).map((item) => item.ma_voucher)),
+      ];
+
+      if (voucherIdsByBranch.length === 0) {
+        return {
+          data: [],
+          pagination: { total: 0, page, limit, total_pages: 0 },
+        };
+      }
+    }
+
+    let voucherIdsByKeywordBranch: string[] = [];
+    const keyword = dto.keyword?.trim();
+    if (keyword) {
+      const { data: matchedBranches, error: matchedBranchError } = await client
+        .from('chi_nhanh')
+        .select('ma_cn')
+        .or(`ten_chi_nhanh.ilike.%${keyword}%,dia_chi.ilike.%${keyword}%`);
+
+      if (matchedBranchError) throw new NotFoundException(matchedBranchError.message);
+
+      const matchedBranchIds = (matchedBranches ?? []).map((branch) => branch.ma_cn);
+      if (matchedBranchIds.length > 0) {
+        const { data: matchedVoucherBranches, error: matchedVoucherBranchError } = await client
+          .from('voucher_chi_nhanh')
+          .select('ma_voucher')
+          .in('ma_cn', matchedBranchIds);
+
+        if (matchedVoucherBranchError) throw new NotFoundException(matchedVoucherBranchError.message);
+
+        voucherIdsByKeywordBranch = [
+          ...new Set((matchedVoucherBranches ?? []).map((item) => item.ma_voucher)),
+        ];
+      }
+    }
 
     let query = client
       .from('voucher')
@@ -87,13 +132,18 @@ export class VouchersService {
     query = query.gt('so_luong_phat_hanh', 0); // Còn hàng
 
     // Lọc theo từ khóa (tên voucher)
-    if (dto.keyword) {
-      query = query.ilike('ten_voucher', `%${dto.keyword}%`);
-    }
-
     // Lọc theo danh mục
     if (dto.ma_taxon) {
-      query = query.eq('ma_taxon', dto.ma_taxon);
+      const { data: childCategories } = await client
+        .from('danh_muc')
+        .select('ma_taxon')
+        .eq('ma_taxon_cha', dto.ma_taxon);
+
+      const categoryIds = [
+        dto.ma_taxon,
+        ...((childCategories ?? []).map((category) => category.ma_taxon)),
+      ];
+      query = query.in('ma_taxon', categoryIds);
     }
 
     // Lọc theo đối tác
@@ -109,17 +159,54 @@ export class VouchersService {
       query = query.lte('gia_ban', parseFloat(dto.gia_max));
     }
 
-    const { data, count, error } = await query.range(from, to);
+    if (voucherIdsByBranch) {
+      query = query.in('ma_voucher', voucherIdsByBranch);
+    }
+
+    const { data, error } = await query;
 
     if (error) throw new NotFoundException(error.message);
 
+    let results = (data ?? []).filter((voucher) => {
+      const giaGoc = Number(voucher.gia_goc);
+      const giaBan = Number(voucher.gia_ban);
+      const soLuongPhatHanh = Number(voucher.so_luong_phat_hanh);
+      const soLuongDaBan = Number(voucher.so_luong_da_ban);
+
+      if (soLuongPhatHanh <= soLuongDaBan) return false;
+
+      if (keyword) {
+        const normalizedKeyword = keyword.toLowerCase();
+        const matchVoucherName = String(voucher.ten_voucher ?? '')
+          .toLowerCase()
+          .includes(normalizedKeyword);
+        const matchPartnerName = String((voucher as any).doi_tac?.ten_doanh_nghiep ?? '')
+          .toLowerCase()
+          .includes(normalizedKeyword);
+        const matchBranchName = voucherIdsByKeywordBranch.includes(voucher.ma_voucher);
+
+        if (!matchVoucherName && !matchPartnerName && !matchBranchName) return false;
+      }
+
+      if (dto.giam_min) {
+        if (!giaGoc || giaGoc <= 0) return false;
+        const discountPercent = ((giaGoc - giaBan) / giaGoc) * 100;
+        return discountPercent >= parseFloat(dto.giam_min);
+      }
+
+      return true;
+    });
+
+    const count = results.length;
+    results = results.slice(from, from + limit);
+
     return {
-      data: data ?? [],
+      data: results,
       pagination: {
-        total: count ?? 0,
+        total: count,
         page,
         limit,
-        total_pages: Math.ceil((count ?? 0) / limit),
+        total_pages: Math.ceil(count / limit),
       },
     };
   }
@@ -199,6 +286,26 @@ export class VouchersService {
   }
 
   // ─── DANH SÁCH PHÂN LOẠI VOUCHER ─────────────────────────────────────────────
+  async getPublicBranches() {
+    const client = this.supabaseService.getClient();
+
+    const { data, error } = await client
+      .from('chi_nhanh')
+      .select(`
+        ma_cn,
+        ten_chi_nhanh,
+        dia_chi,
+        ma_dt,
+        doi_tac ( ten_doanh_nghiep )
+      `)
+      .eq('trang_thai_hoat_dong', 'active')
+      .order('ten_chi_nhanh');
+
+    if (error) throw new NotFoundException(error.message);
+
+    return { data: data ?? [] };
+  }
+
   async getPhanLoai() {
     const client = this.supabaseService.getClient();
     const { data, error } = await client
@@ -688,6 +795,23 @@ export class VouchersService {
     return {
       success: true,
       data,
+    };
+  }
+
+  async getActiveBranches() {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('chi_nhanh')
+      .select('ma_cn, ten_chi_nhanh, dia_chi, ma_dt, doi_tac (ten_doanh_nghiep)')
+      .eq('trang_thai_hoat_dong', 'active');
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    return {
+      success: true,
+      data: data ?? [],
     };
   }
 

@@ -43,6 +43,11 @@ export class VouchersController {
     return this.vouchersService.getCategories();
   }
 
+  @Get('branches')
+  getPublicBranches() {
+    return this.vouchersService.getPublicBranches();
+  }
+
   // GET /api/vouchers/phan-loai  → Danh sách phân loại voucher
   @Get('phan-loai')
   getPhanLoai() {
@@ -80,6 +85,12 @@ export class VouchersController {
     @Query() query: any,
   ) {
     return this.vouchersService.searchVoucherForAdmin(query, userId);
+  }
+
+  // Lấy tất cả chi nhánh đang hoạt động
+  @Get('branches/active')
+  getActiveBranches() {
+    return this.vouchersService.getActiveBranches();
   }
 
   // Lấy chi nhánh của đối tác
@@ -192,4 +203,3 @@ export class VouchersController {
     return this.vouchersService.deleteBranch(maCN);
   }
 }
-

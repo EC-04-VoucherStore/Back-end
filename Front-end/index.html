@@ -110,7 +110,7 @@
         }
     </script>
 </head>
-<body class="min-h-screen bg-background flex items-center justify-center p-4 relative overflow-hidden font-sans text-on-background">
+<body class="min-h-screen bg-background flex items-center justify-center py-8 px-4 relative overflow-y-auto font-sans text-on-background">
     <!-- Background Decor -->
     <div class="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-primary-fixed blur-[100px] opacity-60 z-0"></div>
     <div class="absolute bottom-[-10%] right-[-10%] w-[30vw] h-[30vw] rounded-full bg-secondary-fixed blur-[100px] opacity-40 z-0"></div>
@@ -160,41 +160,90 @@
 
         <!-- Register Form -->
         <form class="tab-content flex flex-col gap-4" id="form-register">
+            <!-- Chọn vai trò -->
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium text-on-surface" for="reg-email">Email</label>
+                <label class="text-sm font-medium text-on-surface">Bạn muốn đăng ký làm</label>
+                <div class="flex gap-4 mt-1">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="reg-role" value="khach_hang" checked onchange="toggleRegFields()" class="text-primary focus:ring-primary border-outline-variant"/>
+                        <span class="text-sm font-medium text-on-surface">Khách hàng</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="reg-role" value="doi_tac" onchange="toggleRegFields()" class="text-primary focus:ring-primary border-outline-variant"/>
+                        <span class="text-sm font-medium text-on-surface">Đối tác bán hàng</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-sm font-medium text-on-surface" for="reg-email">Email <span class="text-error">*</span></label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">mail</span>
-                    <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" id="reg-email" placeholder="example@gmail.com" type="email" required/>
+                    <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-email" placeholder="example@gmail.com" type="email" required/>
                 </div>
             </div>
             <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium text-on-surface" for="reg-password">Mật khẩu</label>
+                <label class="text-sm font-medium text-on-surface" for="reg-password">Mật khẩu <span class="text-error">*</span></label>
                 <div class="relative">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">lock</span>
-                    <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" id="reg-password" placeholder="Tối thiểu 6 ký tự" type="password" required minlength="6"/>
+                    <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-password" placeholder="Tối thiểu 6 ký tự" type="password" required minlength="6"/>
                 </div>
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium text-on-surface" for="reg-name">Họ và tên</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">person</span>
-                    <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" id="reg-name" placeholder="Nguyễn Văn A" type="text" required/>
+
+            <!-- Trường dành cho Khách hàng -->
+            <div id="customer-fields" class="flex flex-col gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-on-surface" for="reg-name">Họ và tên <span class="text-error">*</span></label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">person</span>
+                        <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-name" placeholder="Nguyễn Văn A" type="text" required/>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-on-surface" for="reg-sdt">Số điện thoại</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">phone</span>
+                        <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-sdt" placeholder="0901234567" type="tel"/>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-on-surface" for="reg-address">Địa chỉ</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">location_on</span>
+                        <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-address" placeholder="Quận 1, TP.HCM" type="text"/>
+                    </div>
                 </div>
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium text-on-surface" for="reg-sdt">Số điện thoại</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">phone</span>
-                    <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" id="reg-sdt" placeholder="0901234567" type="tel"/>
+
+            <!-- Trường dành cho Đối tác -->
+            <div id="partner-fields" class="hidden flex flex-col gap-4">
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-on-surface" for="reg-ten-doanh-nghiep">Tên Doanh nghiệp <span class="text-error">*</span></label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">business</span>
+                        <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-ten-doanh-nghiep" placeholder="Công ty TNHH ABC" type="text"/>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-on-surface" for="reg-nguoi-dai-dien">Người đại diện</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">person</span>
+                        <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-nguoi-dai-dien" placeholder="Nguyễn Văn A" type="text"/>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-sm font-medium text-on-surface" for="reg-ma-so-thue">Mã số thuế</label>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">article</span>
+                        <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-sm" id="reg-ma-so-thue" placeholder="0102030405" type="text"/>
+                    </div>
+                </div>
+                <div class="p-3 bg-surface-container-low rounded-lg border border-outline-variant/30 flex items-start gap-2">
+                    <span class="material-symbols-outlined text-primary text-[18px] mt-0.5">info</span>
+                    <p class="text-[11px] text-on-surface-variant leading-relaxed">Tài khoản đối tác sẽ được duyệt bởi Admin trong vòng 24h trước khi hoạt động.</p>
                 </div>
             </div>
-            <div class="flex flex-col gap-1">
-                <label class="text-sm font-medium text-on-surface" for="reg-address">Địa chỉ</label>
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">location_on</span>
-                    <input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" id="reg-address" placeholder="Quận 1, TP.HCM" type="text"/>
-                </div>
-            </div>
+
             <button class="w-full mt-2 h-11 bg-secondary text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-sm" type="submit">
                 <span>Đăng ký tài khoản</span>
                 <span class="material-symbols-outlined text-[18px]">person_add</span>
@@ -252,22 +301,56 @@
             }
         });
 
+        function toggleRegFields() {
+            const role = document.querySelector('input[name="reg-role"]:checked').value;
+            const customerFields = document.getElementById('customer-fields');
+            const partnerFields = document.getElementById('partner-fields');
+            const regName = document.getElementById('reg-name');
+            const regTenDoanhNghiep = document.getElementById('reg-ten-doanh-nghiep');
+
+            if (role === 'khach_hang') {
+                customerFields.classList.remove('hidden');
+                partnerFields.classList.add('hidden');
+                regName.required = true;
+                regTenDoanhNghiep.required = false;
+            } else {
+                customerFields.classList.add('hidden');
+                partnerFields.classList.remove('hidden');
+                regName.required = false;
+                regTenDoanhNghiep.required = true;
+            }
+        }
+
         // Đăng ký
         document.getElementById('form-register').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('reg-email').value;
+            const role = document.querySelector('input[name="reg-role"]:checked').value;
+            const email = document.getElementById('reg-email').value.trim();
             const password = document.getElementById('reg-password').value;
-            const ho_ten = document.getElementById('reg-name').value;
-            const sdt = document.getElementById('reg-sdt').value || undefined;
-            const dia_chi = document.getElementById('reg-address').value || undefined;
 
             try {
-                const res = await apiFetch('/api/auth/register', {
-                    method: 'POST',
-                    body: JSON.stringify({ email, password, ho_ten, sdt, dia_chi })
-                });
+                if (role === 'khach_hang') {
+                    const ho_ten = document.getElementById('reg-name').value.trim();
+                    const sdt = document.getElementById('reg-sdt').value.trim() || undefined;
+                    const dia_chi = document.getElementById('reg-address').value.trim() || undefined;
 
-                showToast(res.message, 'success');
+                    const res = await apiFetch('/api/auth/register', {
+                        method: 'POST',
+                        body: JSON.stringify({ email, password, ho_ten, sdt, dia_chi })
+                    });
+                    showToast(res.message || 'Đăng ký khách hàng thành công!', 'success');
+                } else {
+                    const ten_doanh_nghiep = document.getElementById('reg-ten-doanh-nghiep').value.trim();
+                    const nguoi_dai_dien = document.getElementById('reg-nguoi-dai-dien').value.trim() || undefined;
+                    const ma_so_thue = document.getElementById('reg-ma-so-thue').value.trim() || undefined;
+
+                    const res = await apiFetch('/api/auth/register-partner', {
+                        method: 'POST',
+                        body: JSON.stringify({ email, password, ten_doanh_nghiep, nguoi_dai_dien, ma_so_thue })
+                    });
+                    showToast(res.message || 'Đăng ký đối tác thành công! Vui lòng chờ phê duyệt.', 'success');
+                }
+
                 // Tự động điền email vừa đăng ký vào ô đăng nhập và chuyển tab
                 document.getElementById('login-username').value = email;
                 switchTab('login');

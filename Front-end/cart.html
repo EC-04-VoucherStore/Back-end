@@ -221,10 +221,7 @@
     container.innerHTML = cartItems.map(item => `
       <div class="cart-item bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant flex flex-col md:flex-row items-center gap-6 group" id="item-${item.ma_ctgh}">
         <div class="w-full md:w-32 h-32 rounded-lg overflow-hidden shrink-0 bg-surface-container">
-          ${item.voucher?.link_voucher_banner
-            ? `<img src="${item.voucher.link_voucher_banner}" alt="${item.voucher.ten_voucher}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>`
-            : `<div class="w-full h-full flex items-center justify-center text-outline-variant"><span class="material-symbols-outlined text-5xl">confirmation_number</span></div>`
-          }
+          <img src="${getVoucherImage(item.voucher)}" alt="${item.voucher?.ten_voucher || 'Voucher'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="handleVoucherImageError(this, '${item.voucher?.ten_voucher || ''}')"/>
         </div>
         <div class="flex-grow flex flex-col md:flex-row justify-between items-center w-full gap-4">
           <div class="text-center md:text-left">

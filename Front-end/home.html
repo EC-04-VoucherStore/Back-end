@@ -63,7 +63,7 @@
       <a class="text-xl font-bold text-primary" href="home.html">VoucherHub</a>
       <div class="hidden md:flex relative w-80">
         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
-        <input id="search-input" class="w-full bg-surface-container border border-outline-variant rounded-full py-2 pl-10 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" placeholder="Tìm kiếm voucher..." type="text"/>
+        <input id="search-input" class="w-full bg-surface-container border border-outline-variant rounded-full py-2 pl-10 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" placeholder="Tìm tên voucher hoặc chi nhánh..." type="text"/>
       </div>
     </div>
     <nav class="hidden md:flex items-center gap-6">
@@ -137,6 +137,26 @@
           </select>
         </div>
 
+        <!-- Mức giảm giá -->
+        <div>
+          <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider mb-3">Mức giảm giá</h3>
+          <select id="discount-filter" class="w-full bg-white border border-outline-variant rounded-lg py-2 px-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none" onchange="fetchFilteredVouchers()">
+            <option value="0">Tất cả</option>
+            <option value="10">Giảm từ 10% trở lên</option>
+            <option value="20">Giảm từ 20% trở lên</option>
+            <option value="30">Giảm từ 30% trở lên</option>
+            <option value="50">Giảm từ 50% trở lên</option>
+          </select>
+        </div>
+
+        <!-- Chi nhánh -->
+        <div>
+          <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider mb-3">Chi nhánh</h3>
+          <select id="branch-filter" class="w-full bg-white border border-outline-variant rounded-lg py-2 px-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none" onchange="fetchFilteredVouchers()">
+            <option value="">Tất cả</option>
+          </select>
+        </div>
+
         <button onclick="fetchFilteredVouchers()" class="w-full py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:brightness-110 transition-all shadow-sm">
           Áp dụng bộ lọc
         </button>
@@ -195,7 +215,7 @@
 
 <script src="js/api.js"></script>
 <script>
-  let currentKeyword = '', selectedCategory = '', maxPrice = 1000000, sortOption = '', currentPage = 1;
+  let currentKeyword = '', selectedCategory = '', selectedBranch = '', maxPrice = 1000000, minDiscount = 0, sortOption = '', currentPage = 1;
   const PAGE_SIZE = 9;
   let allVouchers = [];
 
@@ -226,7 +246,7 @@
       document.getElementById('search-input').value = currentKeyword;
     }
 
-    await Promise.all([loadCategories(), loadHomepageData(), loadCartBadge()]);
+    await Promise.all([loadCategories(), loadBranches(), loadHomepageData(), loadCartBadge()]);
   });
 
   async function loadCartBadge() {
@@ -250,6 +270,18 @@
     } catch (err) { console.error(err); }
   }
 
+  async function loadBranches() {
+    try {
+      const res = await apiFetch('/api/vouchers/branches/active');
+      const select = document.getElementById('branch-filter');
+      const options = (res.data || []).map(branch => {
+        const partner = branch.doi_tac?.ten_doanh_nghiep ? ` - ${branch.doi_tac.ten_doanh_nghiep}` : '';
+        return `<option value="${branch.ma_cn}">${branch.ten_chi_nhanh}${partner}</option>`;
+      });
+      select.innerHTML = `<option value="">Tất cả</option>${options.join('')}`;
+    } catch (err) { console.error(err); }
+  }
+
   async function loadHomepageData() {
     try {
       const res = await apiFetch('/api/vouchers/homepage');
@@ -258,17 +290,37 @@
     } catch (err) { showToast(err.message, 'error'); }
   }
 
+  function buildFilterParams(page = 1) {
+    const params = new URLSearchParams({
+      limit: PAGE_SIZE,
+      page,
+    });
+
+    if (currentKeyword) params.set('keyword', currentKeyword);
+    if (selectedCategory) params.set('ma_taxon', selectedCategory);
+    if (selectedBranch) params.set('ma_cn', selectedBranch);
+    if (maxPrice < 1000000) params.set('gia_max', maxPrice);
+    if (minDiscount > 0) params.set('giam_min', minDiscount);
+
+    const validity = document.getElementById('validity-filter').value;
+    if (validity) params.set('hieu_luc', validity);
+
+    return params;
+  }
+
   async function fetchFilteredVouchers() {
     currentPage = 1;
     try {
-      const params = new URLSearchParams({ keyword: currentKeyword, ma_taxon: selectedCategory, gia_max: maxPrice, hieu_luc: document.getElementById('validity-filter').value, limit: PAGE_SIZE });
+      selectedBranch = document.getElementById('branch-filter').value;
+      minDiscount = parseInt(document.getElementById('discount-filter').value || '0');
+      const params = buildFilterParams(currentPage);
       const res = await apiFetch(`/api/vouchers?${params}`);
       let list = res.data || [];
       if (sortOption === 'price_asc') list.sort((a, b) => a.gia_ban - b.gia_ban);
       else if (sortOption === 'price_desc') list.sort((a, b) => b.gia_ban - a.gia_ban);
       allVouchers = list;
       renderVouchers(list);
-      document.getElementById('grid-title').textContent = selectedCategory || currentKeyword ? 'Kết quả lọc' : 'Voucher Nổi Bật';
+      document.getElementById('grid-title').textContent = selectedCategory || selectedBranch || currentKeyword || maxPrice < 1000000 || minDiscount > 0 ? 'Kết quả lọc' : 'Voucher Nổi Bật';
     } catch (err) { console.error(err); }
   }
 
@@ -293,13 +345,6 @@
   // Sắp xếp
   document.getElementById('sort-select').addEventListener('change', e => { sortOption = e.target.value; fetchFilteredVouchers(); });
 
-  const sampleImages = [
-    'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=400&q=80',
-    'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80',
-  ];
-
   function renderVouchers(vouchers) {
     const container = document.getElementById('voucher-grid');
     const countEl = document.getElementById('grid-count');
@@ -315,11 +360,11 @@
       const conLai = v.so_luong_phat_hanh - v.so_luong_da_ban;
       const pct = Math.round((v.so_luong_da_ban / v.so_luong_phat_hanh) * 100);
       const disc = Math.round(((v.gia_goc - v.gia_ban) / v.gia_goc) * 100);
-      const img = v.link_voucher_banner || sampleImages[idx % sampleImages.length];
+      const img = getVoucherImage(v, idx);
       return `
         <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden hover:shadow-md transition-shadow flex flex-col group cursor-pointer" onclick="goToDetail('${v.ma_voucher}')">
-          <div class="relative h-44 overflow-hidden bg-surface-container">
-            <img alt="${v.ten_voucher}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="${img}"/>
+          <div class="relative aspect-[4/3] overflow-hidden bg-surface-container">
+            <img alt="${v.ten_voucher}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="${img}" loading="lazy" onerror="handleVoucherImageError(this, '${v.ten_voucher || ''}')"/>
             <div class="absolute top-2 left-2 flex flex-col gap-1">
               ${disc > 0 ? `<span class="bg-error text-white text-[11px] font-bold px-2 py-0.5 rounded">-${disc}%</span>` : ''}
               ${conLai <= 10 ? `<span class="bg-on-background/70 text-white text-[10px] px-2 py-0.5 rounded">Sắp hết</span>` : ''}
@@ -354,7 +399,8 @@
   async function loadMore() {
     currentPage++;
     try {
-      const params = new URLSearchParams({ keyword: currentKeyword, ma_taxon: selectedCategory, gia_max: maxPrice, limit: PAGE_SIZE, page: currentPage });
+      selectedBranch = document.getElementById('branch-filter').value;
+      const params = buildFilterParams(currentPage);
       const res = await apiFetch(`/api/vouchers?${params}`);
       const more = res.data || [];
       if (more.length > 0) {
@@ -366,7 +412,11 @@
   }
 
   function goToDetail(maVoucher) {
-    window.location.href = `detail?id=${maVoucher}`;
+    if (window.location.protocol === 'file:') {
+      window.location.href = `detail.html?id=${maVoucher}`;
+    } else {
+      window.location.href = `detail?id=${maVoucher}`;
+    }
   }
 </script>
 </body>

@@ -70,19 +70,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <!-- Left Column: Media & Details -->
             <div class="lg:col-span-8 flex flex-col gap-6">
-                <!-- Voucher Image Bento -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 h-[350px]">
-                    <div class="md:col-span-2 rounded-xl overflow-hidden bg-slate-100 relative">
-                        <img id="detail-img-main" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80" alt="Main image"/>
-                    </div>
-                    <div class="hidden md:flex flex-col gap-4">
-                        <div class="h-[167px] rounded-xl overflow-hidden bg-slate-100">
-                            <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=400&q=80" alt="Detail image 1"/>
-                        </div>
-                        <div class="h-[167px] rounded-xl overflow-hidden bg-slate-100">
-                            <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=400&q=80" alt="Detail image 2"/>
-                        </div>
-                    </div>
+                <!-- Voucher Image Container -->
+                <div class="rounded-xl overflow-hidden bg-slate-100 relative h-[350px]">
+                    <img id="detail-img-main" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80" alt="Main image"/>
                 </div>
 
                 <!-- Info Block -->
@@ -163,10 +153,10 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-col gap-3">
-                        <button class="w-full h-11 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors active:scale-[0.98]" onclick="handleAddToCart()">
+                        <button type="button" class="w-full h-11 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors active:scale-[0.98]" onclick="handleAddToCart()">
                             Thêm vào giỏ
                         </button>
-                        <button class="w-full h-11 bg-primary text-white font-bold rounded-lg hover:opacity-95 transition-opacity active:scale-[0.98]" onclick="handleBuyNow()">
+                        <button type="button" class="w-full h-11 bg-primary text-white font-bold rounded-lg hover:opacity-95 transition-opacity active:scale-[0.98]" onclick="handleBuyNow()">
                             Mua ngay
                         </button>
                     </div>
@@ -195,7 +185,7 @@
         window.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             maVoucher = params.get('id');
-            if (!maVoucher) {
+            if (!maVoucher || maVoucher === 'undefined' || maVoucher === 'null') {
                 window.location.href = 'home.html';
                 return;
             }
@@ -234,9 +224,10 @@
                 document.getElementById('detail-ton-kho').textContent = v.ton_kho;
                 document.getElementById('detail-expiry').textContent = formatDate(v.ngay_kt);
 
-                if (v.link_voucher_banner) {
-                    document.getElementById('detail-img-main').src = v.link_voucher_banner;
-                }
+                const detailImage = getVoucherImage(v);
+                const mainImage = document.getElementById('detail-img-main');
+                mainImage.src = detailImage;
+                mainImage.onerror = () => handleVoucherImageError(mainImage, v.ten_voucher);
 
                 // Load chi nhánh
                 const branchList = document.getElementById('branch-list');
@@ -334,7 +325,15 @@
                 });
                 
                 // 2. Chuyển ngay đến trang giỏ hàng để hoàn thành thanh toán
-                window.location.href = 'cart.html';
+                const cartRes = await apiFetch('/api/orders/cart');
+                const cartItems = cartRes.data || [];
+                const checkoutTotal = cartItems.reduce((sum, item) => {
+                    return sum + ((item.voucher?.gia_ban || 0) * (item.so_luong_mua || 0));
+                }, 0);
+
+                sessionStorage.setItem('checkout_items', JSON.stringify(cartItems));
+                sessionStorage.setItem('checkout_total', checkoutTotal);
+                window.location.href = 'checkout.html';
             } catch (err) {
                 showToast(err.message, 'error');
             }

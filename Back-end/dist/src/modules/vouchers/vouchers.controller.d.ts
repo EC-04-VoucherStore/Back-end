@@ -37,6 +37,17 @@ export declare class VouchersController {
             thu_tu_hien_thi: any;
         }[];
     }>;
+    getPublicBranches(): Promise<{
+        data: {
+            ma_cn: any;
+            ten_chi_nhanh: any;
+            dia_chi: any;
+            ma_dt: any;
+            doi_tac: {
+                ten_doanh_nghiep: any;
+            }[];
+        }[];
+    }>;
     getPhanLoai(): Promise<{
         data: {
             ma_pl: any;
@@ -125,6 +136,18 @@ export declare class VouchersController {
         success: boolean;
         total: number;
         data: any[];
+    }>;
+    getActiveBranches(): Promise<{
+        success: boolean;
+        data: {
+            ma_cn: any;
+            ten_chi_nhanh: any;
+            dia_chi: any;
+            ma_dt: any;
+            doi_tac: {
+                ten_doanh_nghiep: any;
+            }[];
+        }[];
     }>;
     getBranches(maDT: string): Promise<{
         success: boolean;

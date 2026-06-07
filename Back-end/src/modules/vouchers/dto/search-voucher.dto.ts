@@ -3,33 +3,41 @@ import { IsNumberString, IsOptional, IsString } from 'class-validator';
 export class SearchVoucherDto {
   @IsString()
   @IsOptional()
-  keyword?: string; // Tìm theo tên voucher
+  keyword?: string;
 
   @IsString()
   @IsOptional()
-  ma_taxon?: string; // Lọc theo danh mục
+  ma_taxon?: string;
 
   @IsString()
   @IsOptional()
-  ma_dt?: string; // Lọc theo đối tác
-
-  @IsNumberString()
-  @IsOptional()
-  gia_min?: string; // Lọc giá bán tối thiểu
-
-  @IsNumberString()
-  @IsOptional()
-  gia_max?: string; // Lọc giá bán tối đa
+  ma_dt?: string;
 
   @IsString()
   @IsOptional()
-  hieu_luc?: string; // Lọc theo trạng thái hiệu lực: 'dang_dien_ra' | 'sap_dien_ra' | 'het_han'
+  ma_cn?: string;
 
   @IsNumberString()
   @IsOptional()
-  page?: string; // Số trang (mặc định 1)
+  gia_min?: string;
 
   @IsNumberString()
   @IsOptional()
-  limit?: string; // Số item mỗi trang (mặc định 12)
+  gia_max?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  giam_min?: string;
+
+  @IsString()
+  @IsOptional()
+  hieu_luc?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  page?: string;
+
+  @IsNumberString()
+  @IsOptional()
+  limit?: string;
 }

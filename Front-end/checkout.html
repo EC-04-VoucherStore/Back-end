@@ -261,10 +261,7 @@
     container.innerHTML = checkoutItems.map(item => `
       <div class="flex gap-4">
         <div class="w-14 h-14 rounded-lg bg-surface-container-high flex-shrink-0 overflow-hidden border border-outline-variant">
-          ${item.voucher?.link_voucher_banner
-            ? `<img src="${item.voucher.link_voucher_banner}" alt="${item.voucher.ten_voucher}" class="w-full h-full object-cover"/>`
-            : `<div class="w-full h-full flex items-center justify-center"><span class="material-symbols-outlined text-outline-variant">confirmation_number</span></div>`
-          }
+          <img src="${getVoucherImage(item.voucher)}" alt="${item.voucher?.ten_voucher || 'Voucher'}" class="w-full h-full object-cover" loading="lazy" onerror="handleVoucherImageError(this, '${item.voucher?.ten_voucher || ''}')"/>
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-semibold text-on-surface truncate">${item.voucher?.ten_voucher || 'Voucher'}</p>
