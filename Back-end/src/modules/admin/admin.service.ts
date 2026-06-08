@@ -96,6 +96,57 @@ export class AdminService {
     return { success: true, data, message: 'Từ chối voucher thành công' };
   }
 
+  async hideVoucher(voucherId: string) {
+    const { data, error } = await this.supabase
+      .getClient()
+      .from('voucher')
+      .update({ trang_thai: 'inactive' })
+      .eq('ma_voucher', voucherId)
+      .select()
+      .single();
+    if (error || !data) throw new NotFoundException('Voucher không tồn tại');
+    return { success: true, data, message: 'Đã ẩn voucher thành công' };
+  }
+
+  async activateVoucher(voucherId: string) {
+    const { data, error } = await this.supabase
+      .getClient()
+      .from('voucher')
+      .update({ trang_thai: 'active' })
+      .eq('ma_voucher', voucherId)
+      .select()
+      .single();
+    if (error || !data) throw new NotFoundException('Voucher không tồn tại');
+    return { success: true, data, message: 'Đã hiển thị lại voucher thành công' };
+  }
+
+  async deleteVoucher(voucherId: string) {
+    const client = this.supabase.getClient();
+    // Get voucher to delete banner if any
+    const { data: voucher } = await client
+      .from('voucher')
+      .select('link_voucher_banner')
+      .eq('ma_voucher', voucherId)
+      .single();
+
+    if (voucher?.link_voucher_banner) {
+      // Extract path
+      const parts = voucher.link_voucher_banner.split('/storage/v1/object/public/images/');
+      const oldPath = parts[1] || null;
+      if (oldPath) {
+        await client.storage.from('images').remove([oldPath]);
+      }
+    }
+
+    const { error } = await client
+      .from('voucher')
+      .delete()
+      .eq('ma_voucher', voucherId);
+
+    if (error) throw new BadRequestException(error.message);
+    return { success: true, message: 'Đã gỡ bỏ voucher thành công' };
+  }
+
   // ─── PHÊ DUYỆT ĐỐI TÁC (BR-PAR-01, BR-ADM-02) ───────────────────────────────
 
   async getPendingPartners() {

@@ -48,6 +48,12 @@ let VouchersController = class VouchersController {
     getVoucherDetail(maVoucher) {
         return this.vouchersService.getVoucherDetail(maVoucher);
     }
+    getPartnerProfile(userId) {
+        return this.vouchersService.getPartnerProfile(userId);
+    }
+    updatePartnerProfile(userId, payload) {
+        return this.vouchersService.updatePartnerProfile(userId, payload);
+    }
     getAllVouchers(userId) {
         return this.vouchersService.getAllVouchers(userId);
     }
@@ -56,6 +62,9 @@ let VouchersController = class VouchersController {
     }
     getActiveBranches() {
         return this.vouchersService.getActiveBranches();
+    }
+    getActivePartners() {
+        return this.vouchersService.getActivePartners();
     }
     getBranches(maDT) {
         return this.vouchersService.getBranches(maDT);
@@ -131,6 +140,25 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getVoucherDetail", null);
 __decorate([
+    (0, common_1.Get)('partner/profile'),
+    (0, common_1.UseGuards)(supabase_auth_guard_1.SupabaseAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('doi_tac'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getPartnerProfile", null);
+__decorate([
+    (0, common_1.Put)('partner/profile'),
+    (0, common_1.UseGuards)(supabase_auth_guard_1.SupabaseAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)('doi_tac'),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "updatePartnerProfile", null);
+__decorate([
     (0, common_1.Get)('admin/all'),
     (0, common_1.UseGuards)(supabase_auth_guard_1.SupabaseAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)('admin', 'doi_tac'),
@@ -155,6 +183,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], VouchersController.prototype, "getActiveBranches", null);
+__decorate([
+    (0, common_1.Get)('partners/active'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], VouchersController.prototype, "getActivePartners", null);
 __decorate([
     (0, common_1.Get)('admin/branches/:maDT'),
     (0, common_1.UseGuards)(supabase_auth_guard_1.SupabaseAuthGuard, roles_guard_1.RolesGuard),

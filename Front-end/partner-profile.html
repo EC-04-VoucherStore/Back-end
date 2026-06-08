@@ -218,40 +218,76 @@
   async function loadProfile() {
     try {
       const user = Auth.getUser();
-      // Lấy profile từ vouchers: danh sách cho admin (cần tìm cách lấy partner info)
-      // Sử dụng endpoint admin/all để xác nhận maDT từ token
-      const res = await apiFetch('/api/vouchers/admin/all');
-      // Lấy maDT từ voucher đầu tiên (nếu có)
-      if (res.data?.length > 0) maDT = res.data[0].ma_dt;
+      
+      // Lấy thông tin đối tác từ API mới
+      const profileRes = await apiFetch('/api/vouchers/partner/profile');
+      const partner = profileRes.data;
+      maDT = partner.ma_dt;
 
-      // Cập nhật UI với thông tin user
+      // Điền thông tin vào form
+      document.getElementById('ten_doanh_nghiep').value = partner.ten_doanh_nghiep || '';
+      document.getElementById('ma_so_thue').value = partner.ma_so_thue || '';
+      document.getElementById('nguoi_dai_dien').value = partner.nguoi_dai_dien || '';
       document.getElementById('profile-email').value = user?.email || '';
-      document.getElementById('biz-name').textContent = 'Tài khoản đối tác';
-      document.getElementById('biz-avatar').textContent = (user?.email?.[0] || 'P').toUpperCase();
+      
+      document.getElementById('biz-name').textContent = partner.ten_doanh_nghiep || 'Tài khoản đối tác';
+      document.getElementById('biz-avatar').textContent = (partner.ten_doanh_nghiep?.[0] || user?.email?.[0] || 'P').toUpperCase();
+      document.getElementById('ma-dt').textContent = maDT;
+
+      // Lấy số lượng voucher của đối tác
+      const res = await apiFetch('/api/vouchers/admin/all');
       document.getElementById('stat-vouchers').textContent = res.data?.length || 0;
 
       // Load chi nhánh nếu có maDT
       if (maDT) {
         const brRes = await apiFetch(`/api/vouchers/admin/branches/${maDT}`);
         document.getElementById('stat-branches').textContent = brRes.data?.length || 0;
-        document.getElementById('ma-dt').textContent = maDT;
       }
 
-      // Lấy thông tin từ badge
+      // Trạng thái phê duyệt tài khoản đối tác
       const badge = document.getElementById('approval-badge');
-      badge.textContent = 'Đã duyệt';
-      badge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-secondary-container text-on-secondary-container';
+      if (partner.trang_thai_duyet === 'active') {
+        badge.textContent = 'Đã duyệt';
+        badge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-secondary-container text-on-secondary-container';
+      } else if (partner.trang_thai_duyet === 'pending') {
+        badge.textContent = 'Chờ duyệt';
+        badge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800';
+      } else {
+        badge.textContent = 'Bị từ chối';
+        badge.className = 'inline-block mt-2 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800';
+      }
     } catch (err) {
       console.error(err);
+      showToast('Lỗi tải thông tin đối tác: ' + err.message, 'error');
     }
   }
 
   document.getElementById('form-profile').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Đang lưu...';
+
     try {
-      // Không có endpoint PATCH partner profile riêng, có thể dùng admin nếu cần
-      showToast('Đã lưu thông tin!', 'success');
-    } catch (err) { showToast(err.message, 'error'); }
+      const ten_doanh_nghiep = document.getElementById('ten_doanh_nghiep').value.trim();
+      const ma_so_thue = document.getElementById('ma_so_thue').value.trim();
+      const nguoi_dai_dien = document.getElementById('nguoi_dai_dien').value.trim();
+
+      const res = await apiFetch('/api/vouchers/partner/profile', {
+        method: 'PUT',
+        body: JSON.stringify({ ten_doanh_nghiep, ma_so_thue, nguoi_dai_dien })
+      });
+
+      showToast(res.message || 'Cập nhật thông tin đối tác thành công!', 'success');
+      document.getElementById('biz-name').textContent = ten_doanh_nghiep;
+      document.getElementById('biz-avatar').textContent = (ten_doanh_nghiep[0] || 'P').toUpperCase();
+    } catch (err) { 
+      showToast(err.message, 'error'); 
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
   });
 
   async function loadBranches() {

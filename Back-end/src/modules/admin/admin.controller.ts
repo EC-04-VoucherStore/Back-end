@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { SupabaseAuthGuard } from '../../common/guards/supabase-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -38,6 +38,21 @@ export class AdminController {
   @Patch('vouchers/:id/reject')
   rejectVoucher(@Param('id') id: string) {
     return this.adminService.rejectVoucher(id);
+  }
+
+  @Patch('vouchers/:id/hide')
+  hideVoucher(@Param('id') id: string) {
+    return this.adminService.hideVoucher(id);
+  }
+
+  @Patch('vouchers/:id/activate')
+  activateVoucher(@Param('id') id: string) {
+    return this.adminService.activateVoucher(id);
+  }
+
+  @Delete('vouchers/:id')
+  deleteVoucher(@Param('id') id: string) {
+    return this.adminService.deleteVoucher(id);
   }
 
   // ─── QUẢN TRỊ ĐỐI TÁC ────────────────────────────────────────────────────────

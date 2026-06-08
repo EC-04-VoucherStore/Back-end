@@ -65,6 +65,20 @@ export declare class AdminController {
         data: any;
         message: string;
     }>;
+    hideVoucher(id: string): Promise<{
+        success: boolean;
+        data: any;
+        message: string;
+    }>;
+    activateVoucher(id: string): Promise<{
+        success: boolean;
+        data: any;
+        message: string;
+    }>;
+    deleteVoucher(id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
     getPendingPartners(): Promise<{
         success: boolean;
         data: any[];

@@ -127,6 +127,10 @@
           <label class="block text-sm font-medium text-on-surface-variant mb-1">Mô tả</label>
           <textarea id="v-mota" class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm resize-none" rows="3" placeholder="Điều kiện áp dụng..."></textarea>
         </div>
+        <div>
+          <label class="block text-sm font-medium text-on-surface-variant mb-1">Link hình ảnh sản phẩm <span class="text-error">*</span></label>
+          <input id="v-banner" class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm" type="text" placeholder="https://example.com/hinh-anh.jpg"/>
+        </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-on-surface-variant mb-1">Phân loại <span class="text-error">*</span></label>
@@ -147,14 +151,21 @@
         <h4 class="text-sm font-bold text-primary flex items-center gap-2">
           <span class="material-symbols-outlined text-[16px]">payments</span>Giá & Kho hàng
         </h4>
-        <div class="grid grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-on-surface-variant mb-1">Giá gốc (đ) <span class="text-error">*</span></label>
-            <input id="v-gia-goc" class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm" type="number" min="0" placeholder="200000"/>
+            <input id="v-gia-goc" class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm" type="number" min="0" placeholder="200000" oninput="calculateGiaBan()"/>
           </div>
+          <div id="v-giam-container" class="hidden">
+            <label id="v-giam-label" class="block text-sm font-medium text-on-surface-variant mb-1">Mức giảm <span class="text-error">*</span></label>
+            <input id="v-giam-val" class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm" type="number" min="0" placeholder="0" oninput="calculateGiaBan()"/>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-on-surface-variant mb-1">Giá bán (đ) <span class="text-error">*</span></label>
-            <input id="v-gia-ban" class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm" type="number" min="0" placeholder="150000"/>
+            <input id="v-gia-ban" class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none text-sm" type="number" min="0" placeholder="150000" oninput="calculateGiaBan()"/>
+            <p class="text-[11px] text-outline mt-1" id="v-gia-ban-hint">Tự động tính dựa trên Giá gốc và Mức giảm</p>
           </div>
           <div>
             <label class="block text-sm font-medium text-on-surface-variant mb-1">Số lượng <span class="text-error">*</span></label>
@@ -305,6 +316,7 @@
     document.getElementById('edit-id').value = editingId || '';
     document.getElementById('v-ten').value = v?.ten_voucher || '';
     document.getElementById('v-mota').value = v?.mo_ta || '';
+    document.getElementById('v-banner').value = v?.link_voucher_banner || '';
     document.getElementById('v-gia-goc').value = v?.gia_goc || '';
     document.getElementById('v-gia-ban').value = v?.gia_ban || '';
     document.getElementById('v-sl').value = v?.so_luong_phat_hanh || '';
@@ -312,9 +324,77 @@
     document.getElementById('v-taxon').value = v?.ma_taxon || '';
     document.getElementById('v-ngay-bd').value = v?.ngay_bd ? v.ngay_bd.slice(0,16) : '';
     document.getElementById('v-ngay-kt').value = v?.ngay_kt ? v.ngay_kt.slice(0,16) : '';
+    
+    // Set discount values
+    if (v) {
+      if (v.ma_pl === 'PL_PHAN_TRAM') {
+        const pct = v.gia_goc ? Math.round(((v.gia_goc - v.gia_ban) / v.gia_goc) * 100) : 0;
+        document.getElementById('v-giam-val').value = pct;
+      } else if (v.ma_pl === 'PL_TIEN_MAT') {
+        document.getElementById('v-giam-val').value = v.gia_goc - v.gia_ban;
+      } else {
+        document.getElementById('v-giam-val').value = '';
+      }
+    } else {
+      document.getElementById('v-giam-val').value = '';
+    }
+
+    // Trigger classification UI updates
+    updateDiscountUI();
+
     const modal = document.getElementById('voucher-modal');
     modal.classList.remove('hidden'); modal.classList.add('flex');
   }
+
+  function updateDiscountUI() {
+    const pl = document.getElementById('v-pl').value;
+    const giamContainer = document.getElementById('v-giam-container');
+    const giamLabel = document.getElementById('v-giam-label');
+    const giaBanInput = document.getElementById('v-gia-ban');
+    const giaBanHint = document.getElementById('v-gia-ban-hint');
+
+    if (pl === 'PL_PHAN_TRAM') {
+      giamContainer.classList.remove('hidden');
+      giamLabel.innerHTML = 'Mức giảm (%) <span class="text-error">*</span>';
+      giaBanInput.readOnly = true;
+      giaBanInput.placeholder = 'Tự động tính';
+      giaBanHint.classList.remove('hidden');
+    } else if (pl === 'PL_TIEN_MAT') {
+      giamContainer.classList.remove('hidden');
+      giamLabel.innerHTML = 'Mức giảm (đ) <span class="text-error">*</span>';
+      giaBanInput.readOnly = true;
+      giaBanInput.placeholder = 'Tự động tính';
+      giaBanHint.classList.remove('hidden');
+    } else {
+      giamContainer.classList.add('hidden');
+      giaBanInput.readOnly = false;
+      giaBanInput.placeholder = '150000';
+      giaBanHint.classList.add('hidden');
+    }
+    calculateGiaBan();
+  }
+
+  function calculateGiaBan() {
+    const pl = document.getElementById('v-pl').value;
+    const giaGoc = Number(document.getElementById('v-gia-goc').value || 0);
+    const giamVal = Number(document.getElementById('v-giam-val').value || 0);
+    const giaBanInput = document.getElementById('v-gia-ban');
+
+    if (pl === 'PL_PHAN_TRAM') {
+      const discount = Math.round(giaGoc * (giamVal / 100));
+      giaBanInput.value = Math.max(0, giaGoc - discount);
+    } else if (pl === 'PL_TIEN_MAT') {
+      giaBanInput.value = Math.max(0, giaGoc - giamVal);
+    }
+  }
+
+  // Hook change event to v-pl
+  document.addEventListener('DOMContentLoaded', () => {
+    const plSelect = document.getElementById('v-pl');
+    if (plSelect) {
+      plSelect.addEventListener('change', updateDiscountUI);
+    }
+  });
 
   function closeModal() {
     const modal = document.getElementById('voucher-modal');
@@ -325,6 +405,7 @@
 
   async function saveVoucher(submit) {
     const ten = document.getElementById('v-ten').value.trim();
+    const banner = document.getElementById('v-banner').value.trim();
     const giaGoc = Number(document.getElementById('v-gia-goc').value);
     const giaBan = Number(document.getElementById('v-gia-ban').value);
     const sl = Number(document.getElementById('v-sl').value);
@@ -333,7 +414,7 @@
     const ngayBd = document.getElementById('v-ngay-bd').value;
     const ngayKt = document.getElementById('v-ngay-kt').value;
 
-    if (!ten || !giaGoc || !giaBan || !sl || !pl || !taxon || !ngayBd || !ngayKt) {
+    if (!ten || !banner || !giaGoc || !giaBan || !sl || !pl || !taxon || !ngayBd || !ngayKt) {
       showToast('Vui lòng điền đầy đủ các trường bắt buộc!', 'error'); return;
     }
     if (giaBan >= giaGoc) { showToast('Giá bán phải nhỏ hơn giá gốc!', 'error'); return; }
@@ -358,7 +439,7 @@
       MaPL: pl,
       MaTaxon: taxon,
       MaDT: maDT,
-      bannerUrl: '',
+      bannerUrl: banner,
       NgayBD: new Date(ngayBd).toISOString(),
       NgayKT: new Date(ngayKt).toISOString()
     };
@@ -377,7 +458,7 @@
       closeModal();
       await loadVouchers();
     } catch (err) { showToast(err.message, 'error'); }
-    finally { btn.disabled = false; btn.textContent = submit ? 'Gửii duyệt' : 'Lưu nháp'; }
+    finally { btn.disabled = false; btn.textContent = submit ? 'Gửi duyệt' : 'Lưu nháp'; }
   }
 
   async function deleteVoucher(maVoucher, name) {

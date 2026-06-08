@@ -3,6 +3,7 @@ export enum VoucherStatus {
   PENDING = 'pending',
   SCHEDULED = 'scheduled',
   ACTIVE = 'active',
+  INACTIVE = 'inactive',
   REJECTED = 'rejected',
   EXPIRED = 'expired',
 }

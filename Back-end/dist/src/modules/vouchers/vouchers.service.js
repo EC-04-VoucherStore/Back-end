@@ -142,6 +142,7 @@ let VouchersService = class VouchersService {
         if (voucherIdsByBranch) {
             query = query.in('ma_voucher', voucherIdsByBranch);
         }
+        query = query.order('ngay_bd', { ascending: false });
         const { data, error } = await query;
         if (error)
             throw new common_1.NotFoundException(error.message);
@@ -387,6 +388,27 @@ let VouchersService = class VouchersService {
             },
         };
     }
+    async updatePartnerProfile(userId, payload) {
+        const client = this.supabaseService.getClient();
+        const { data, error } = await client
+            .from('doi_tac')
+            .update({
+            ten_doanh_nghiep: payload.ten_doanh_nghiep,
+            nguoi_dai_dien: payload.nguoi_dai_dien,
+            ma_so_thue: payload.ma_so_thue,
+        })
+            .eq('ma_tk', userId)
+            .select()
+            .single();
+        if (error) {
+            throw new common_1.BadRequestException(`Lỗi cập nhật hồ sơ đối tác: ${error.message}`);
+        }
+        return {
+            success: true,
+            message: 'Cập nhật thông tin đối tác thành công!',
+            data,
+        };
+    }
     extractPathFromUrl(url) {
         try {
             const parts = url.split('/storage/v1/object/public/images/');
@@ -406,22 +428,47 @@ let VouchersService = class VouchersService {
         if (findError || !voucher) {
             throw new common_1.NotFoundException('Voucher không tồn tại');
         }
-        if (payload.link_voucher_banner && payload.link_voucher_banner !== voucher.link_voucher_banner) {
+        const updateData = {};
+        const tenVoucher = payload.TenVoucher !== undefined ? payload.TenVoucher : payload.ten_voucher;
+        if (tenVoucher !== undefined)
+            updateData.ten_voucher = tenVoucher;
+        const moTa = payload.MoTa !== undefined ? payload.MoTa : payload.mo_ta;
+        if (moTa !== undefined)
+            updateData.mo_ta = moTa;
+        const giaGoc = payload.GiaGoc !== undefined ? payload.GiaGoc : payload.gia_goc;
+        if (giaGoc !== undefined)
+            updateData.gia_goc = giaGoc;
+        const giaBan = payload.GiaBan !== undefined ? payload.GiaBan : payload.gia_ban;
+        if (giaBan !== undefined)
+            updateData.gia_ban = giaBan;
+        const soLuongPhatHanh = payload.SoLuongPhatHanh !== undefined ? payload.SoLuongPhatHanh : payload.so_luong_phat_hanh;
+        if (soLuongPhatHanh !== undefined)
+            updateData.so_luong_phat_hanh = soLuongPhatHanh;
+        const maPL = payload.MaPL !== undefined ? payload.MaPL : payload.ma_pl;
+        if (maPL !== undefined)
+            updateData.ma_pl = maPL;
+        const maTaxon = payload.MaTaxon !== undefined ? payload.MaTaxon : payload.ma_taxon;
+        if (maTaxon !== undefined)
+            updateData.ma_taxon = maTaxon;
+        const bannerUrl = payload.bannerUrl !== undefined ? payload.bannerUrl : (payload.link_voucher_banner !== undefined ? payload.link_voucher_banner : undefined);
+        if (bannerUrl !== undefined)
+            updateData.link_voucher_banner = bannerUrl;
+        const ngayBD = payload.NgayBD !== undefined ? payload.NgayBD : payload.ngay_bd;
+        if (ngayBD !== undefined)
+            updateData.ngay_bd = ngayBD;
+        const ngayKT = payload.NgayKT !== undefined ? payload.NgayKT : payload.ngay_kt;
+        if (ngayKT !== undefined)
+            updateData.ngay_kt = ngayKT;
+        if (updateData.link_voucher_banner && updateData.link_voucher_banner !== voucher.link_voucher_banner) {
             const oldPath = this.extractPathFromUrl(voucher.link_voucher_banner);
             if (oldPath) {
                 await client.storage.from('images').remove([oldPath]);
             }
         }
-        if (voucher.trang_thai === voucher_status_enum_1.VoucherStatus.REJECTED ||
-            voucher.trang_thai === voucher_status_enum_1.VoucherStatus.SCHEDULED) {
-            payload.trang_thai = voucher_status_enum_1.VoucherStatus.PENDING;
-        }
-        if (voucher.trang_thai === voucher_status_enum_1.VoucherStatus.DRAFT) {
-            payload.trang_thai = voucher_status_enum_1.VoucherStatus.DRAFT;
-        }
+        updateData.trang_thai = voucher_status_enum_1.VoucherStatus.DRAFT;
         const { data, error } = await client
             .from('voucher')
-            .update(payload)
+            .update(updateData)
             .eq('ma_voucher', id)
             .select()
             .single();
@@ -475,8 +522,12 @@ let VouchersService = class VouchersService {
         if (findError || !voucher) {
             throw new common_1.NotFoundException('Voucher không tồn tại');
         }
-        if (voucher.trang_thai !== voucher_status_enum_1.VoucherStatus.DRAFT) {
-            throw new common_1.BadRequestException('Voucher không còn ở trạng thái nháp để gửi duyệt');
+        if (voucher.trang_thai !== voucher_status_enum_1.VoucherStatus.DRAFT &&
+            voucher.trang_thai !== voucher_status_enum_1.VoucherStatus.REJECTED &&
+            voucher.trang_thai !== voucher_status_enum_1.VoucherStatus.ACTIVE &&
+            voucher.trang_thai !== voucher_status_enum_1.VoucherStatus.INACTIVE &&
+            voucher.trang_thai !== voucher_status_enum_1.VoucherStatus.SCHEDULED) {
+            throw new common_1.BadRequestException('Voucher không ở trạng thái hợp lệ để gửi duyệt');
         }
         const { data, error } = await this.supabaseService
             .getClient()
@@ -655,6 +706,21 @@ let VouchersService = class VouchersService {
             .from('chi_nhanh')
             .select('ma_cn, ten_chi_nhanh, dia_chi, ma_dt, doi_tac (ten_doanh_nghiep)')
             .eq('trang_thai_hoat_dong', 'active');
+        if (error) {
+            throw new common_1.BadRequestException(error.message);
+        }
+        return {
+            success: true,
+            data: data ?? [],
+        };
+    }
+    async getActivePartners() {
+        const client = this.supabaseService.getClient();
+        const { data, error } = await client
+            .from('doi_tac')
+            .select('ma_dt, ten_doanh_nghiep')
+            .eq('trang_thai_duyet', 'approved')
+            .order('ten_doanh_nghiep');
         if (error) {
             throw new common_1.BadRequestException(error.message);
         }

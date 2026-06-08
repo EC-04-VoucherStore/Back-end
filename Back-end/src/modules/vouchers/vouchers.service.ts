@@ -163,6 +163,8 @@ export class VouchersService {
       query = query.in('ma_voucher', voucherIdsByBranch);
     }
 
+    query = query.order('ngay_bd', { ascending: false });
+
     const { data, error } = await query;
 
     if (error) throw new NotFoundException(error.message);
@@ -465,6 +467,30 @@ export class VouchersService {
     };
   }
 
+  async updatePartnerProfile(userId: string, payload: any) {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('doi_tac')
+      .update({
+        ten_doanh_nghiep: payload.ten_doanh_nghiep,
+        nguoi_dai_dien: payload.nguoi_dai_dien,
+        ma_so_thue: payload.ma_so_thue,
+      })
+      .eq('ma_tk', userId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new BadRequestException(`Lỗi cập nhật hồ sơ đối tác: ${error.message}`);
+    }
+
+    return {
+      success: true,
+      message: 'Cập nhật thông tin đối tác thành công!',
+      data,
+    };
+  }
+
   // Bóc tách đường dẫn từ URL để xóa file trên Storage
   private extractPathFromUrl(url: string): string | null {
     try {
@@ -489,29 +515,53 @@ export class VouchersService {
       throw new NotFoundException('Voucher không tồn tại');
     }
 
+    const updateData: any = {};
+    
+    // Map PascalCase/camelCase or snake_case fields
+    const tenVoucher = payload.TenVoucher !== undefined ? payload.TenVoucher : payload.ten_voucher;
+    if (tenVoucher !== undefined) updateData.ten_voucher = tenVoucher;
+
+    const moTa = payload.MoTa !== undefined ? payload.MoTa : payload.mo_ta;
+    if (moTa !== undefined) updateData.mo_ta = moTa;
+
+    const giaGoc = payload.GiaGoc !== undefined ? payload.GiaGoc : payload.gia_goc;
+    if (giaGoc !== undefined) updateData.gia_goc = giaGoc;
+
+    const giaBan = payload.GiaBan !== undefined ? payload.GiaBan : payload.gia_ban;
+    if (giaBan !== undefined) updateData.gia_ban = giaBan;
+
+    const soLuongPhatHanh = payload.SoLuongPhatHanh !== undefined ? payload.SoLuongPhatHanh : payload.so_luong_phat_hanh;
+    if (soLuongPhatHanh !== undefined) updateData.so_luong_phat_hanh = soLuongPhatHanh;
+
+    const maPL = payload.MaPL !== undefined ? payload.MaPL : payload.ma_pl;
+    if (maPL !== undefined) updateData.ma_pl = maPL;
+
+    const maTaxon = payload.MaTaxon !== undefined ? payload.MaTaxon : payload.ma_taxon;
+    if (maTaxon !== undefined) updateData.ma_taxon = maTaxon;
+
+    const bannerUrl = payload.bannerUrl !== undefined ? payload.bannerUrl : (payload.link_voucher_banner !== undefined ? payload.link_voucher_banner : undefined);
+    if (bannerUrl !== undefined) updateData.link_voucher_banner = bannerUrl;
+
+    const ngayBD = payload.NgayBD !== undefined ? payload.NgayBD : payload.ngay_bd;
+    if (ngayBD !== undefined) updateData.ngay_bd = ngayBD;
+
+    const ngayKT = payload.NgayKT !== undefined ? payload.NgayKT : payload.ngay_kt;
+    if (ngayKT !== undefined) updateData.ngay_kt = ngayKT;
+
     // Nếu thay đổi đường dẫn banner, tiến hành xóa ảnh banner cũ trên Supabase Storage
-    if (payload.link_voucher_banner && payload.link_voucher_banner !== voucher.link_voucher_banner) {
+    if (updateData.link_voucher_banner && updateData.link_voucher_banner !== voucher.link_voucher_banner) {
       const oldPath = this.extractPathFromUrl(voucher.link_voucher_banner);
       if (oldPath) {
         await client.storage.from('images').remove([oldPath]);
       }
     }
 
-    // Kiểm tra trạng thái để cập nhật về PENDING nếu bị từ chối/lên lịch trước đó
-    if (
-      voucher.trang_thai === VoucherStatus.REJECTED ||
-      voucher.trang_thai === VoucherStatus.SCHEDULED
-    ) {
-      payload.trang_thai = VoucherStatus.PENDING;
-    }
-
-    if (voucher.trang_thai === VoucherStatus.DRAFT) {
-      payload.trang_thai = VoucherStatus.DRAFT;
-    }
+    // Khi đối tác lưu chỉnh sửa, ta đưa về trạng thái nháp (DRAFT) để cho phép gửi duyệt lại
+    updateData.trang_thai = VoucherStatus.DRAFT;
 
     const { data, error } = await client
       .from('voucher')
-      .update(payload)
+      .update(updateData)
       .eq('ma_voucher', id)
       .select()
       .single();
@@ -580,8 +630,14 @@ export class VouchersService {
       throw new NotFoundException('Voucher không tồn tại');
     }
 
-    if (voucher.trang_thai !== VoucherStatus.DRAFT) {
-      throw new BadRequestException('Voucher không còn ở trạng thái nháp để gửi duyệt');
+    if (
+      voucher.trang_thai !== VoucherStatus.DRAFT &&
+      voucher.trang_thai !== VoucherStatus.REJECTED &&
+      voucher.trang_thai !== VoucherStatus.ACTIVE &&
+      voucher.trang_thai !== VoucherStatus.INACTIVE &&
+      voucher.trang_thai !== VoucherStatus.SCHEDULED
+    ) {
+      throw new BadRequestException('Voucher không ở trạng thái hợp lệ để gửi duyệt');
     }
 
     const { data, error } = await this.supabaseService
@@ -804,6 +860,24 @@ export class VouchersService {
       .from('chi_nhanh')
       .select('ma_cn, ten_chi_nhanh, dia_chi, ma_dt, doi_tac (ten_doanh_nghiep)')
       .eq('trang_thai_hoat_dong', 'active');
+
+    if (error) {
+      throw new BadRequestException(error.message);
+    }
+
+    return {
+      success: true,
+      data: data ?? [],
+    };
+  }
+
+  async getActivePartners() {
+    const client = this.supabaseService.getClient();
+    const { data, error } = await client
+      .from('doi_tac')
+      .select('ma_dt, ten_doanh_nghiep')
+      .eq('trang_thai_duyet', 'approved')
+      .order('ten_doanh_nghiep');
 
     if (error) {
       throw new BadRequestException(error.message);
