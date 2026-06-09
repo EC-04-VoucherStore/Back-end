@@ -36,27 +36,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_js_1 = require("@supabase/supabase-js");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
-async function run() {
-    console.log('--- PARTNERS & VOUCHERS COUNT ---');
-    const { data: partners, error: pErr } = await supabase.from('doi_tac').select('*');
-    if (pErr) {
-        console.error(pErr);
-        return;
-    }
-    for (const partner of partners || []) {
-        const { data: tk } = await supabase.from('tai_khoan').select('*').eq('ma_tk', partner.ma_tk).single();
-        const { data: vouchers } = await supabase.from('voucher').select('ma_voucher').eq('ma_dt', partner.ma_dt);
-        console.log(`Partner: ${partner.ten_doanh_nghiep}`);
-        console.log(`- Ma DT: ${partner.ma_dt}`);
-        console.log(`- Email (Username): ${tk?.username || 'N/A'}`);
-        console.log(`- Role: ${tk?.vai_tro || 'N/A'}`);
-        console.log(`- Active Status: ${tk?.trang_thai_hoat_dong || 'N/A'}`);
-        console.log(`- Vouchers Count: ${vouchers?.length || 0}`);
-        console.log('-------------------------');
-    }
+const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+async function test() {
+    const ids = ['1be06d5d-aa9d-4328-b1cd-3c9b82b2e701', 'b26d3000-7d5a-4391-bd9f-45a2bf9b10d6'];
+    const { data: dt } = await supabase.from('doi_tac').select('*').in('ma_tk', ids);
+    console.log('--- DOI_TAC FOR RECENT PARTNERS ---');
+    console.log(dt);
 }
-run();
+test();
 //# sourceMappingURL=check-partners.js.map
