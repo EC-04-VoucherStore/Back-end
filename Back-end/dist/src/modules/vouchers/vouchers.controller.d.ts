@@ -128,6 +128,22 @@ export declare class VouchersController {
             }[];
         };
     }>;
+    getPartnerProfile(userId: string): Promise<{
+        success: boolean;
+        data: {
+            ma_dt: any;
+            ten_doanh_nghiep: any;
+            nguoi_dai_dien: any;
+            ma_so_thue: any;
+            trang_thai_duyet: any;
+            trang_thai_hoat_dong: any;
+        };
+    }>;
+    updatePartnerProfile(userId: string, payload: any): Promise<{
+        success: boolean;
+        message: string;
+        data: any;
+    }>;
     getAllVouchers(userId: string): Promise<{
         success: boolean;
         data: any[];
@@ -147,6 +163,13 @@ export declare class VouchersController {
             doi_tac: {
                 ten_doanh_nghiep: any;
             }[];
+        }[];
+    }>;
+    getActivePartners(): Promise<{
+        success: boolean;
+        data: {
+            ma_dt: any;
+            ten_doanh_nghiep: any;
         }[];
     }>;
     getBranches(maDT: string): Promise<{

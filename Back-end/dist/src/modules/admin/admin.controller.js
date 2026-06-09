@@ -41,6 +41,15 @@ let AdminController = class AdminController {
     rejectVoucher(id) {
         return this.adminService.rejectVoucher(id);
     }
+    hideVoucher(id) {
+        return this.adminService.hideVoucher(id);
+    }
+    activateVoucher(id) {
+        return this.adminService.activateVoucher(id);
+    }
+    deleteVoucher(id) {
+        return this.adminService.deleteVoucher(id);
+    }
     getPendingPartners() {
         return this.adminService.getPendingPartners();
     }
@@ -113,6 +122,27 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "rejectVoucher", null);
+__decorate([
+    (0, common_1.Patch)('vouchers/:id/hide'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "hideVoucher", null);
+__decorate([
+    (0, common_1.Patch)('vouchers/:id/activate'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "activateVoucher", null);
+__decorate([
+    (0, common_1.Delete)('vouchers/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], AdminController.prototype, "deleteVoucher", null);
 __decorate([
     (0, common_1.Get)('partners/pending'),
     __metadata("design:type", Function),

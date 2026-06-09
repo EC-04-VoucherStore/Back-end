@@ -148,6 +148,11 @@ export declare class VouchersService {
             trang_thai_hoat_dong: any;
         };
     }>;
+    updatePartnerProfile(userId: string, payload: any): Promise<{
+        success: boolean;
+        message: string;
+        data: any;
+    }>;
     private extractPathFromUrl;
     updateVoucher(id: string, payload: any, userId?: string): Promise<{
         success: boolean;
@@ -192,6 +197,13 @@ export declare class VouchersService {
             doi_tac: {
                 ten_doanh_nghiep: any;
             }[];
+        }[];
+    }>;
+    getActivePartners(): Promise<{
+        success: boolean;
+        data: {
+            ma_dt: any;
+            ten_doanh_nghiep: any;
         }[];
     }>;
     uploadBanner(file: any): Promise<{

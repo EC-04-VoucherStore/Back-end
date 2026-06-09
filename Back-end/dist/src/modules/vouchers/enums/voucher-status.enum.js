@@ -7,6 +7,7 @@ var VoucherStatus;
     VoucherStatus["PENDING"] = "pending";
     VoucherStatus["SCHEDULED"] = "scheduled";
     VoucherStatus["ACTIVE"] = "active";
+    VoucherStatus["INACTIVE"] = "inactive";
     VoucherStatus["REJECTED"] = "rejected";
     VoucherStatus["EXPIRED"] = "expired";
 })(VoucherStatus || (exports.VoucherStatus = VoucherStatus = {}));

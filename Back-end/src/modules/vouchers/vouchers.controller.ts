@@ -68,6 +68,25 @@ export class VouchersController {
 
   // ─── ĐỐI TÁC / QUẢN TRỊ (PARTNER / ADMIN) ─────────────────────────────────────
 
+  // Lấy hồ sơ đối tác
+  @Get('partner/profile')
+  @UseGuards(SupabaseAuthGuard, RolesGuard)
+  @Roles('doi_tac')
+  getPartnerProfile(@CurrentUser('id') userId: string) {
+    return this.vouchersService.getPartnerProfile(userId);
+  }
+
+  // Cập nhật hồ sơ đối tác
+  @Put('partner/profile')
+  @UseGuards(SupabaseAuthGuard, RolesGuard)
+  @Roles('doi_tac')
+  updatePartnerProfile(
+    @CurrentUser('id') userId: string,
+    @Body() payload: any,
+  ) {
+    return this.vouchersService.updatePartnerProfile(userId, payload);
+  }
+
   // Lấy toàn bộ danh sách voucher (Admin / Đối tác)
   @Get('admin/all')
   @UseGuards(SupabaseAuthGuard, RolesGuard)
@@ -91,6 +110,12 @@ export class VouchersController {
   @Get('branches/active')
   getActiveBranches() {
     return this.vouchersService.getActiveBranches();
+  }
+
+  // Lấy tất cả đối tác đang hoạt động (Thương hiệu)
+  @Get('partners/active')
+  getActivePartners() {
+    return this.vouchersService.getActivePartners();
   }
 
   // Lấy chi nhánh của đối tác
