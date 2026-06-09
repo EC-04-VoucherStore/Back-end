@@ -8,6 +8,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { SupabaseService } from '../../supabase/supabase.service';
+import { RedisService } from '../../common/redis/redis.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -16,7 +17,10 @@ import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly supabaseService: SupabaseService) {}
+  constructor(
+    private readonly supabaseService: SupabaseService,
+    private readonly redisService: RedisService,
+  ) {}
 
   // Helper: Xác thực token và lấy ma_kh của khách hàng
   private async getKhachHang(accessToken: string) {
