@@ -1,3 +1,4 @@
+import type { Response } from 'express';
 import { OrdersService } from './orders.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -27,6 +28,12 @@ export declare class OrdersController {
         message: string;
     }>;
     removeFromCart(token: string, maCtgh: string): Promise<{
+        message: string;
+    }>;
+    updateCartQuantity(token: string, maCtgh: string, soLuongMua: number): Promise<{
+        message: string;
+    } | {
+        success: boolean;
         message: string;
     }>;
     createOrder(token: string, dto: CreateOrderDto): Promise<{
@@ -134,6 +141,10 @@ export declare class OrdersController {
         success: boolean;
         url: string;
     }>;
-    stripeSuccess(token: string, sessionId: string): Promise<string>;
-    stripeCancel(): string;
+    stripeSuccess(sessionId: string, res: Response): Promise<void>;
+    stripeConfirm(token: string, sessionId: string): Promise<{
+        ma_dh: any;
+        tong_tien: number;
+    }>;
+    stripeCancel(res: Response): void;
 }

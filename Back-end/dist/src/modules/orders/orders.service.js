@@ -109,6 +109,44 @@ let OrdersService = class OrdersService {
             throw new common_1.InternalServerErrorException(error.message);
         return { message: 'Đã xóa khỏi giỏ hàng.' };
     }
+    async updateCartQuantity(accessToken, maCtgh, soLuongMua) {
+        if (soLuongMua < 1) {
+            return this.removeFromCart(accessToken, maCtgh);
+        }
+        const client = this.supabaseService.getClient();
+        const maKh = await this.getKhachHang(accessToken);
+        const { data: cartItem, error: cartError } = await client
+            .from('chi_tiet_gio_hang')
+            .select('ma_voucher, ma_kh')
+            .eq('ma_ctgh', maCtgh)
+            .single();
+        if (cartError || !cartItem)
+            throw new common_1.NotFoundException('Không tìm thấy sản phẩm trong giỏ hàng.');
+        if (cartItem.ma_kh !== maKh)
+            throw new common_1.BadRequestException('Không có quyền thay đổi sản phẩm này.');
+        const { data: voucher } = await client
+            .from('voucher')
+            .select('so_luong_phat_hanh, so_luong_da_ban, trang_thai, ngay_kt')
+            .eq('ma_voucher', cartItem.ma_voucher)
+            .single();
+        if (!voucher)
+            throw new common_1.NotFoundException('Voucher không tồn tại.');
+        const now = new Date().toISOString();
+        if (voucher.trang_thai !== 'active')
+            throw new common_1.BadRequestException('Voucher không còn hoạt động.');
+        if (voucher.ngay_kt < now)
+            throw new common_1.BadRequestException('Voucher đã hết hạn bán.');
+        const conLai = voucher.so_luong_phat_hanh - voucher.so_luong_da_ban;
+        if (soLuongMua > conLai)
+            throw new common_1.BadRequestException(`Chỉ còn ${conLai} voucher trong kho.`);
+        const { error: updateError } = await client
+            .from('chi_tiet_gio_hang')
+            .update({ so_luong_mua: soLuongMua })
+            .eq('ma_ctgh', maCtgh);
+        if (updateError)
+            throw new common_1.InternalServerErrorException(updateError.message);
+        return { success: true, message: 'Đã cập nhật số lượng.' };
+    }
     async createOrder(accessToken, dto) {
         const client = this.supabaseService.getClient();
         const maKh = await this.getKhachHang(accessToken);
@@ -530,6 +568,15 @@ let OrdersService = class OrdersService {
     async handleStripeSuccess(accessToken, sessionId) {
         const Stripe = require('stripe');
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+        const client = this.supabaseService.getClient();
+        const { data: existingTx } = await client
+            .from('lich_su_giao_dich')
+            .select('ma_dh, so_tien')
+            .eq('ma_giao_dich_cung_cap', sessionId)
+            .maybeSingle();
+        if (existingTx) {
+            return { ma_dh: existingTx.ma_dh, tong_tien: Number(existingTx.so_tien) };
+        }
         const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
         if (stripeSession.payment_status !== 'paid') {
             throw new common_1.BadRequestException('Giao dịch chưa hoàn tất.');
@@ -539,7 +586,6 @@ let OrdersService = class OrdersService {
             throw new common_1.BadRequestException('Không tìm thấy thông tin khách hàng từ phiên Stripe.');
         const maCtghListStr = stripeSession.metadata?.ma_ctgh_list || '';
         const maCtghList = maCtghListStr ? maCtghListStr.split(',').filter(Boolean) : [];
-        const client = this.supabaseService.getClient();
         let cartQuery = client
             .from('chi_tiet_gio_hang')
             .select(`ma_ctgh, so_luong_mua, ma_voucher, voucher ( gia_ban, so_luong_phat_hanh, so_luong_da_ban, trang_thai, ngay_kt )`)
@@ -608,6 +654,7 @@ let OrdersService = class OrdersService {
             so_tien: tongTien,
             phuong_thuc_thanh_toan: 'the_quoc_te',
             trang_thai_thanh_toan: 'thanh_cong',
+            ma_giao_dich_cung_cap: sessionId,
         });
         if (maCtghList.length > 0) {
             await client.from('chi_tiet_gio_hang').delete().in('ma_ctgh', maCtghList);

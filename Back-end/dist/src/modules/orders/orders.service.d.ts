@@ -30,6 +30,12 @@ export declare class OrdersService {
     removeFromCart(accessToken: string, maCtgh: string): Promise<{
         message: string;
     }>;
+    updateCartQuantity(accessToken: string, maCtgh: string, soLuongMua: number): Promise<{
+        message: string;
+    } | {
+        success: boolean;
+        message: string;
+    }>;
     createOrder(accessToken: string, dto: CreateOrderDto): Promise<{
         message: string;
         ma_dh: string;
@@ -132,7 +138,7 @@ export declare class OrdersService {
         url: string;
     }>;
     handleStripeSuccess(accessToken: string, sessionId: string): Promise<{
-        ma_dh: string;
+        ma_dh: any;
         tong_tien: number;
     }>;
 }
