@@ -163,6 +163,51 @@ export class OrdersService {
     return { message: 'Đã xóa khỏi giỏ hàng.' };
   }
 
+  // ─── GIỎ HÀNG: CẬP NHẬT SỐ LƯỢNG ───────────────────────────────────────────
+  async updateCartQuantity(accessToken: string, maCtgh: string, soLuongMua: number) {
+    if (soLuongMua < 1) {
+      return this.removeFromCart(accessToken, maCtgh);
+    }
+
+    const client = this.supabaseService.getClient();
+    const maKh = await this.getKhachHang(accessToken);
+
+    // Lấy thông tin chi tiết giỏ hàng hiện tại để validate voucher
+    const { data: cartItem, error: cartError } = await client
+      .from('chi_tiet_gio_hang')
+      .select('ma_voucher, ma_kh')
+      .eq('ma_ctgh', maCtgh)
+      .single();
+
+    if (cartError || !cartItem) throw new NotFoundException('Không tìm thấy sản phẩm trong giỏ hàng.');
+    if (cartItem.ma_kh !== maKh) throw new BadRequestException('Không có quyền thay đổi sản phẩm này.');
+
+    // Kiểm tra hàng tồn kho
+    const { data: voucher } = await client
+      .from('voucher')
+      .select('so_luong_phat_hanh, so_luong_da_ban, trang_thai, ngay_kt')
+      .eq('ma_voucher', cartItem.ma_voucher)
+      .single();
+
+    if (!voucher) throw new NotFoundException('Voucher không tồn tại.');
+    
+    const now = new Date().toISOString();
+    if (voucher.trang_thai !== 'active') throw new BadRequestException('Voucher không còn hoạt động.');
+    if (voucher.ngay_kt < now) throw new BadRequestException('Voucher đã hết hạn bán.');
+
+    const conLai = voucher.so_luong_phat_hanh - voucher.so_luong_da_ban;
+    if (soLuongMua > conLai) throw new BadRequestException(`Chỉ còn ${conLai} voucher trong kho.`);
+
+    // Cập nhật số lượng
+    const { error: updateError } = await client
+      .from('chi_tiet_gio_hang')
+      .update({ so_luong_mua: soLuongMua })
+      .eq('ma_ctgh', maCtgh);
+
+    if (updateError) throw new InternalServerErrorException(updateError.message);
+    return { success: true, message: 'Đã cập nhật số lượng.' };
+  }
+
   // ─── TẠO ĐƠN HÀNG & THANH TOÁN MÔ PHỎNG ────────────────────────────────────
   async createOrder(accessToken: string, dto: CreateOrderDto) {
     const client = this.supabaseService.getClient();
@@ -688,6 +733,19 @@ export class OrdersService {
     const Stripe = require('stripe');
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+    const client = this.supabaseService.getClient();
+
+    // 1. Kiểm tra xem giao dịch này đã được xử lý tạo đơn hàng chưa để tránh trùng lặp
+    const { data: existingTx } = await client
+      .from('lich_su_giao_dich')
+      .select('ma_dh, so_tien')
+      .eq('ma_giao_dich_cung_cap', sessionId)
+      .maybeSingle();
+
+    if (existingTx) {
+      return { ma_dh: existingTx.ma_dh, tong_tien: Number(existingTx.so_tien) };
+    }
+
     // Lấy thông tin phiên từ Stripe
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -701,8 +759,6 @@ export class OrdersService {
     // Lấy danh sách ma_ctgh được chọn (lưu trong metadata khi tạo session)
     const maCtghListStr = stripeSession.metadata?.ma_ctgh_list || '';
     const maCtghList = maCtghListStr ? maCtghListStr.split(',').filter(Boolean) : [];
-
-    const client = this.supabaseService.getClient();
 
     // Lấy giỏ hàng của khách hàng — chỉ lấy đúng những item được chọn
     let cartQuery = client
@@ -789,6 +845,7 @@ export class OrdersService {
       so_tien: tongTien,
       phuong_thuc_thanh_toan: 'the_quoc_te',
       trang_thai_thanh_toan: 'thanh_cong',
+      ma_giao_dich_cung_cap: sessionId,
     });
 
     // Chỉ xóa những item đã thanh toán ra khỏi giỏ hàng
