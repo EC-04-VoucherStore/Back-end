@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ví Voucher - VoucherHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{colors:{
+      "on-surface-variant":"#434655","surface":"#f8f9ff","on-secondary":"#ffffff",
+      "outline-variant":"#c3c6d7","outline":"#737686","surface-bright":"#f8f9ff",
+      "primary-container":"#2563eb","surface-container-high":"#dce9ff",
+      "inverse-on-surface":"#eaf1ff","background":"#f8f9ff",
+      "surface-variant":"#d3e4fe","on-error":"#ffffff","inverse-surface":"#213145",
+      "surface-container-lowest":"#ffffff","tertiary-fixed":"#ffddb8",
+      "tertiary-fixed-dim":"#ffb95f","on-background":"#0b1c30",
+      "surface-dim":"#cbdbf5","surface-container-low":"#eff4ff",
+      "primary":"#004ac6","surface-container-highest":"#d3e4fe",
+      "error-container":"#ffdad6","on-primary":"#ffffff","on-surface":"#0b1c30",
+      "primary-fixed-dim":"#b4c5ff","secondary":"#006c49",
+      "on-secondary-container":"#00714d","secondary-container":"#6cf8bb",
+      "on-primary-fixed":"#00174b","surface-tint":"#0053db",
+      "surface-container":"#e5eeff","primary-fixed":"#dbe1ff",
+      "error":"#ba1a1a","secondary-fixed":"#6ffbbe","on-primary-container":"#eeefff"
+    }}}
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .tear-off-border {
+    background-image: linear-gradient(to bottom, transparent 50%, rgba(195,198,215,0.5) 50%);
+    background-size: 2px 12px; background-repeat: repeat-y; width: 2px;
+  }
+  @media (max-width: 768px) {
+    .tear-off-border { display: none; }
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #c3c6d7; border-radius: 10px; }
+  .star-btn.active span { font-variation-settings: 'FILL' 1; color: #ffb95f; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  .animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 w-full z-50 bg-surface shadow-sm border-b border-outline-variant/30">
+  <div class="max-w-[1280px] mx-auto px-6 h-16 flex justify-between items-center">
+    <a class="text-xl font-bold text-primary flex items-center gap-2" href="home.html">
+      <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">redeem</span>VoucherHub
+    </a>
+    <nav class="hidden md:flex items-center gap-8">
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="home.html">Khám phá</a>
+      <a class="text-sm text-primary font-semibold border-b-2 border-primary pb-1" href="wallet.html">Ví Voucher</a>
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="orders.html">Đơn hàng</a>
+    </nav>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="p-2 rounded-full text-on-surface-variant hover:text-primary hover:bg-surface-container relative">
+        <span class="material-symbols-outlined">shopping_cart</span>
+      </a>
+      <a href="profile.html" class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-sm" id="user-avatar">?</a>
+    </div>
+  </div>
+</header>
+
+<main class="flex-grow pt-24 pb-16 px-4 md:px-8 max-w-[1280px] mx-auto w-full">
+  <div class="mb-8">
+    <h1 class="text-2xl md:text-3xl font-bold text-on-surface mb-2">Ví Voucher của tôi</h1>
+    <p class="text-sm text-on-surface-variant">Quản lý và sử dụng các voucher bạn đã mua.</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex border-b border-outline-variant mb-8 overflow-x-auto no-scrollbar items-center">
+    <div class="flex flex-1">
+      <button id="tab-chua_su_dung" onclick="switchTab('chua_su_dung')"
+        class="tab-btn px-6 py-4 text-sm font-semibold text-primary border-b-2 border-primary whitespace-nowrap">
+        Chưa sử dụng
+      </button>
+      <button id="tab-da_su_dung" onclick="switchTab('da_su_dung')"
+        class="tab-btn px-6 py-4 text-sm font-medium text-on-surface-variant hover:text-primary whitespace-nowrap">
+        Đã sử dụng
+      </button>
+      <button id="tab-da_huy" onclick="switchTab('da_huy')"
+        class="tab-btn px-6 py-4 text-sm font-medium text-on-surface-variant hover:text-primary whitespace-nowrap">
+        Đã hủy/Hết hạn
+      </button>
+    </div>
+    <div class="flex items-center gap-2 mr-2 mb-2">
+      <select id="sort-select" onchange="applySortAndRender()" class="bg-surface hover:bg-surface-container border border-outline rounded-full text-xs font-semibold px-4 py-2 focus:outline-none focus:ring-1 focus:ring-primary">
+        <option value="newest">Mới nhất (Mặc định)</option>
+        <option value="expiry">Hạn dùng gần nhất</option>
+      </select>
+      <button onclick="loadVouchers()" class="flex items-center gap-1.5 px-4 py-2 bg-surface hover:bg-surface-container border border-outline rounded-full text-xs font-semibold transition-colors">
+        <span class="material-symbols-outlined text-sm">refresh</span>
+        Làm mới
+      </button>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div id="voucher-list-container" class="min-h-64 space-y-5 animate-fade-in">
+    <div class="text-center py-16 text-on-surface-variant flex flex-col items-center gap-3">
+      <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <p>Đang tải ví voucher...</p>
+    </div>
+  </div>
+</main>
+
+<footer class="bg-surface-container border-t border-outline-variant/30 py-8 px-6">
+  <div class="max-w-[1280px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+    <span class="text-lg font-bold text-on-surface">VoucherHub</span>
+    <p class="text-xs text-on-surface-variant">© 2024 VoucherHub. All rights reserved.</p>
+    <div class="flex gap-6">
+      <a class="text-xs text-on-surface-variant hover:text-primary" href="#">Điều khoản</a>
+      <a class="text-xs text-on-surface-variant hover:text-primary" href="#">Bảo mật</a>
+      <a class="text-xs text-on-surface-variant hover:text-primary" href="#">Liên hệ</a>
+    </div>
+  </div>
+</footer>
+
+<!-- QR Modal -->
+<div id="qrModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+  <div class="absolute inset-0 bg-on-background/60 backdrop-blur-sm" onclick="closeModal('qrModal')"></div>
+  <div id="qrModalContent" class="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-300">
+    <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-bright">
+      <h2 class="text-lg font-bold text-on-surface">Mã E-Voucher</h2>
+      <button class="p-2 rounded-full hover:bg-surface-container" onclick="closeModal('qrModal')"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="p-8 flex flex-col items-center">
+      <p class="text-base font-semibold text-center text-on-surface mb-6" id="qrModalVoucherName">Tên Voucher</p>
+      <div class="bg-white p-4 rounded-xl border border-outline-variant/30 mb-6">
+        <img id="qr-image" class="w-48 h-48" src="" alt="QR Code"/>
+      </div>
+      <div class="w-full text-center bg-surface-container py-3 px-6 rounded-lg border border-primary/20">
+        <span class="text-xs font-bold text-outline block uppercase tracking-wider mb-1">Mã Voucher</span>
+        <span id="qr-code-text" class="text-xl font-bold text-primary tracking-[0.2em] font-mono">VC-XXXXX</span>
+      </div>
+      <div class="w-full text-center bg-error/5 text-error rounded-lg py-3 px-4 mt-3">
+        <span class="text-xs font-bold block uppercase mb-1">Mã bảo mật (Dành cho đại lý)</span>
+        <span id="qr-security-text" class="text-xs font-mono break-all">--</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Review Modal -->
+<div id="reviewModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+  <div class="absolute inset-0 bg-on-background/60 backdrop-blur-sm" onclick="closeModal('reviewModal')"></div>
+  <div id="reviewModalContent" class="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-300">
+    <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center">
+      <h2 class="text-lg font-bold">Đánh giá Trải nghiệm</h2>
+      <button class="p-2 rounded-full hover:bg-surface-container" onclick="closeModal('reviewModal')"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="p-6">
+      <p class="text-sm text-on-surface-variant mb-4">Chia sẻ cảm nhận về <strong id="reviewVoucherTitle" class="text-on-surface">Voucher</strong></p>
+      <div class="flex justify-center gap-2 mb-6" id="starContainer">
+        <button class="star-btn text-outline-variant hover:text-tertiary-fixed-dim" onclick="setRating(1)"><span class="material-symbols-outlined text-[40px]">star</span></button>
+        <button class="star-btn text-outline-variant hover:text-tertiary-fixed-dim" onclick="setRating(2)"><span class="material-symbols-outlined text-[40px]">star</span></button>
+        <button class="star-btn text-outline-variant hover:text-tertiary-fixed-dim" onclick="setRating(3)"><span class="material-symbols-outlined text-[40px]">star</span></button>
+        <button class="star-btn text-outline-variant hover:text-tertiary-fixed-dim" onclick="setRating(4)"><span class="material-symbols-outlined text-[40px]">star</span></button>
+        <button class="star-btn text-outline-variant hover:text-tertiary-fixed-dim" onclick="setRating(5)"><span class="material-symbols-outlined text-[40px]">star</span></button>
+      </div>
+      <textarea class="w-full bg-surface border border-outline-variant rounded-xl p-4 text-sm focus:outline-none focus:border-primary resize-none mb-4" id="review-comment" rows="4" placeholder="Dịch vụ có tốt không?"></textarea>
+      <div class="flex gap-4">
+        <button class="flex-1 py-3 rounded-full border border-outline-variant text-sm hover:bg-surface-container" onclick="closeModal('reviewModal')">Hủy</button>
+        <button class="flex-1 py-3 rounded-full bg-primary text-white text-sm font-semibold hover:brightness-110" onclick="submitReview()">Gửi đánh giá</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Complaint Modal -->
+<div id="complaintModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+  <div class="absolute inset-0 bg-on-background/60 backdrop-blur-sm" onclick="closeModal('complaintModal')"></div>
+  <div id="complaintModalContent" class="relative bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-300">
+    <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center">
+      <h2 class="text-lg font-bold">Khiếu nại / Hỗ trợ</h2>
+      <button class="p-2 rounded-full hover:bg-surface-container" onclick="closeModal('complaintModal')"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="p-6">
+      <div class="mb-4 p-3 bg-surface-container-low rounded-lg border border-outline-variant/20">
+        <p class="text-xs text-on-surface-variant">Đang hỗ trợ cho</p>
+        <p class="text-sm font-semibold text-on-surface" id="complaintVoucherName">--</p>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-on-surface mb-2">Loại khiếu nại</label>
+        <select id="loai_khieu_nai" class="w-full bg-white border border-outline-variant rounded-xl p-3 text-sm focus:border-primary focus:outline-none">
+          <option value="ma_loi">Mã lỗi (Không quét được)</option>
+          <option value="rap_khong_nhan">Đối tác từ chối voucher</option>
+          <option value="loi_he_thong">Lỗi hệ thống</option>
+          <option value="khac">Lý do khác</option>
+        </select>
+      </div>
+      <textarea id="ly_do" class="w-full bg-surface border border-outline-variant rounded-xl p-4 text-sm focus:border-primary focus:outline-none resize-none mb-6" rows="4" placeholder="Vui lòng mô tả chi tiết vấn đề..."></textarea>
+      <div class="flex gap-4">
+        <button class="flex-1 py-3 rounded-full border border-outline-variant text-sm hover:bg-surface-container" onclick="closeModal('complaintModal')">Hủy</button>
+        <button class="flex-1 py-3 rounded-full bg-error text-white text-sm font-semibold hover:brightness-110" onclick="submitComplaint()">Gửi yêu cầu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  let currentTab = 'chua_su_dung';
+  let currentRating = 0;
+  let reviewVoucherId = '';
+  let complaintVoucherId = '';
+  let allVouchers = [];
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!Auth.requireAuth()) return;
+    const user = Auth.getUser();
+    if (user) document.getElementById('user-avatar').textContent = (user.email?.[0] || '?').toUpperCase();
+    
+    // Đảm bảo hiển thị bộ lọc ban đầu
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) sortSelect.classList.remove('hidden');
+    
+    await loadVouchers();
+  });
+
+  function switchTab(status) {
+    currentTab = status;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.className = 'tab-btn px-6 py-4 text-sm font-medium text-on-surface-variant hover:text-primary whitespace-nowrap transition-colors';
+    });
+    const activeBtn = document.getElementById('tab-' + status);
+    if (activeBtn) activeBtn.className = 'tab-btn px-6 py-4 text-sm font-semibold text-primary border-b-2 border-primary whitespace-nowrap';
+    
+    // Chỉ hiển thị bộ lọc khi ở tab Chưa sử dụng
+    const sortSelect = document.getElementById('sort-select');
+    if (sortSelect) {
+      if (status === 'chua_su_dung') {
+        sortSelect.classList.remove('hidden');
+      } else {
+        sortSelect.classList.add('hidden');
+      }
+    }
+    
+    loadVouchers();
+  }
+
+  async function loadVouchers() {
+    const container = document.getElementById('voucher-list-container');
+    container.innerHTML = `<div class="text-center py-16 text-on-surface-variant flex flex-col items-center gap-3"><div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>`;
+    try {
+      const res = await apiFetch(`/api/orders/my-vouchers?trang_thai=${currentTab}`);
+      allVouchers = res.data || [];
+      applySortAndRender();
+    } catch (err) {
+      showToast(err.message, 'error');
+      container.innerHTML = `<div class="text-center py-16 text-on-surface-variant"><p>Không thể tải ví voucher.</p></div>`;
+    }
+  }
+
+  function applySortAndRender() {
+    let items = [...allVouchers];
+    const sortSelect = document.getElementById('sort-select');
+    if (currentTab === 'chua_su_dung' && sortSelect) {
+      const val = sortSelect.value;
+      if (val === 'expiry') {
+        // Sắp xếp hạn dùng gần nhất (ngay_kt tăng dần)
+        items.sort((a, b) => {
+          const dateA = new Date(a.voucher?.ngay_kt || '9999-12-31').getTime();
+          const dateB = new Date(b.voucher?.ngay_kt || '9999-12-31').getTime();
+          return dateA - dateB;
+        });
+      }
+    }
+    renderVouchers(items);
+  }
+
+  function renderVouchers(items) {
+    const container = document.getElementById('voucher-list-container');
+    if (!items.length) {
+      container.innerHTML = `<div class="py-16 text-center text-on-surface-variant flex flex-col items-center gap-3"><span class="material-symbols-outlined text-5xl text-outline-variant">folder_open</span><p>Không có voucher nào trong danh sách này.</p><a href="home.html" class="mt-4 px-6 py-2.5 bg-primary text-white rounded-full text-sm font-semibold hover:brightness-110 transition-all">Mua voucher ngay</a></div>`;
+      return;
+    }
+
+    container.innerHTML = items.map((item, idx) => {
+      const isUnused = item.trang_thai === 'chua_su_dung';
+      const isUsed = item.trang_thai === 'da_su_dung';
+      const img = getVoucherImage(item.voucher, idx);
+
+      let actionBtn = '';
+      if (isUnused) {
+        actionBtn = `<button onclick="showQrModal('${item.ma_voucher_code}', '${item.voucher?.ten_voucher}', '${item.chuoi_ma_bao_mat || ''}')"
+          class="w-full bg-primary text-white text-sm font-semibold px-6 py-3 rounded-full hover:brightness-110 transition-all flex justify-center items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>Dùng ngay</button>`;
+      } else if (isUsed) {
+        actionBtn = `<div class="flex flex-col gap-2 w-full">
+          <button onclick="openReviewModal('${item.voucher?.ma_voucher}', '${item.voucher?.ten_voucher}')"
+            class="w-full bg-primary text-white text-sm font-semibold py-2.5 rounded-full hover:brightness-110 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">rate_review</span>Đánh giá</button>
+          <button onclick="openComplaintModal('${item.ma_voucher_code}', '${item.voucher?.ten_voucher}')"
+            class="w-full border border-outline-variant text-on-surface-variant text-sm py-2.5 rounded-full hover:bg-surface-container flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">support_agent</span>Khiếu nại</button>
+        </div>`;
+      } else {
+        actionBtn = `<div class="w-full text-center py-2 text-outline bg-surface-container text-xs font-bold rounded-full">KHÔNG THỂ SỬ DỤNG</div>`;
+      }
+
+      return `
+        <div class="group flex flex-col md:flex-row bg-white rounded-xl shadow-sm border border-outline-variant hover:shadow-md hover:border-primary-fixed transition-all overflow-hidden">
+          <div class="w-full md:w-56 aspect-[4/3] md:aspect-auto md:min-h-44 shrink-0 overflow-hidden bg-surface-container">
+            <img src="${img}" alt="${item.voucher?.ten_voucher}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${!isUnused ? 'grayscale-[30%]' : ''}" loading="lazy" onerror="handleVoucherImageError(this, '${item.voucher?.ten_voucher || ''}')"/>
+          </div>
+          <div class="p-5 flex-grow flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-2 flex-wrap">
+                <span class="bg-surface-container text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded border border-outline-variant/50">${item.voucher?.taxon?.ten_taxon || 'Voucher'}</span>
+                ${isUnused && item.voucher?.ngay_kt && new Date(item.voucher.ngay_kt) < new Date(Date.now() + 7*24*3600*1000) ? '<span class="bg-error text-white text-[10px] font-bold px-2 py-0.5 rounded">Sắp hết hạn</span>' : ''}
+              </div>
+              <h3 class="text-base font-bold text-on-surface mb-2 line-clamp-2">${item.voucher?.ten_voucher || 'Voucher'}</h3>
+              <p class="text-xs text-on-surface-variant flex items-center gap-1 mb-1">
+                <span class="material-symbols-outlined text-[14px]">storefront</span>${item.voucher?.doi_tac?.ten_doanh_nghiep || 'Hệ thống'}
+              </p>
+              <p class="text-xs font-mono text-outline">${item.ma_voucher_code}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-outline-variant/30 text-xs ${isUnused ? 'text-error' : 'text-on-surface-variant'}">
+              ${isUnused ? `Hết hạn: ${formatDate(item.voucher?.ngay_kt)}` : isUsed ? `Đã sử dụng: ${formatDate(item.ngay_su_dung)}` : 'Không thể sử dụng'}
+            </div>
+          </div>
+          <div class="relative hidden md:flex flex-col justify-center items-center w-px bg-white">
+            <div class="tear-off-border h-[calc(100%-32px)]"></div>
+            <div class="absolute top-[-10px] left-[-9px] w-5 h-5 rounded-full bg-surface"></div>
+            <div class="absolute bottom-[-10px] left-[-9px] w-5 h-5 rounded-full bg-surface"></div>
+          </div>
+          <div class="p-5 md:w-52 shrink-0 flex flex-col items-center justify-center gap-3 bg-surface-bright/50">
+            ${actionBtn}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Modal helpers
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    const content = document.getElementById(id + 'Content');
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    void modal.offsetWidth;
+    content.classList.remove('scale-95','opacity-0');
+    content.classList.add('scale-100','opacity-100');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    const content = document.getElementById(id + 'Content');
+    content.classList.remove('scale-100','opacity-100');
+    content.classList.add('scale-95','opacity-0');
+    setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); document.body.style.overflow = ''; }, 300);
+  }
+
+  function showQrModal(code, title, security) {
+    document.getElementById('qrModalVoucherName').textContent = title;
+    document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(code)}`;
+    document.getElementById('qr-code-text').textContent = code;
+    document.getElementById('qr-security-text').textContent = security || '--';
+    openModal('qrModal');
+  }
+
+  function openReviewModal(maVoucher, title) {
+    reviewVoucherId = maVoucher;
+    document.getElementById('reviewVoucherTitle').textContent = title;
+    document.getElementById('review-comment').value = '';
+    setRating(0);
+    openModal('reviewModal');
+  }
+
+  function setRating(rating) {
+    currentRating = rating;
+    document.querySelectorAll('.star-btn').forEach((btn, i) => {
+      if (i < rating) btn.classList.add('active'); else btn.classList.remove('active');
+    });
+  }
+
+  async function submitReview() {
+    if (!currentRating) { showToast('Vui lòng chọn số sao!', 'error'); return; }
+    try {
+      const res = await apiFetch('/api/orders/reviews', {
+        method: 'POST',
+        body: JSON.stringify({ ma_voucher: reviewVoucherId, diem_so_dg: currentRating, noi_dung_binh_luan: document.getElementById('review-comment').value || undefined })
+      });
+      showToast(res.message || 'Đánh giá thành công!', 'success');
+      closeModal('reviewModal');
+      loadVouchers();
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+
+  function openComplaintModal(maCode, title) {
+    complaintVoucherId = maCode;
+    document.getElementById('complaintVoucherName').textContent = title + ' (' + maCode + ')';
+    document.getElementById('ly_do').value = '';
+    openModal('complaintModal');
+  }
+
+  async function submitComplaint() {
+    const ly_do = document.getElementById('ly_do').value.trim();
+    if (!ly_do) { showToast('Vui lòng nhập lý do!', 'error'); return; }
+    try {
+      const res = await apiFetch('/api/orders/complaints', {
+        method: 'POST',
+        body: JSON.stringify({ ma_voucher_code: complaintVoucherId, loai_khieu_nai: document.getElementById('loai_khieu_nai').value, ly_do })
+      });
+      showToast(res.message || 'Đã gửi khiếu nại thành công!', 'success');
+      closeModal('complaintModal');
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+</script>
+</body>
+</html>

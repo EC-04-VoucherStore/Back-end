@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Lịch sử đơn hàng - VoucherHub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#004ac6", "secondary": "#006c49", "error": "#ba1a1a",
+            "on-primary": "#ffffff", "on-secondary": "#ffffff",
+            "primary-container": "#2563eb", "on-primary-container": "#eeefff",
+            "secondary-container": "#6cf8bb", "on-secondary-container": "#00714d",
+            "surface": "#f8f9ff", "on-surface": "#0b1c30",
+            "surface-container": "#e5eeff", "surface-container-low": "#eff4ff",
+            "surface-container-lowest": "#ffffff", "surface-container-high": "#dce9ff",
+            "surface-container-highest": "#d3e4fe",
+            "on-surface-variant": "#434655", "outline": "#737686",
+            "outline-variant": "#c3c6d7", "background": "#f8f9ff",
+            "on-background": "#0b1c30", "primary-fixed": "#dbe1ff",
+            "error-container": "#ffdad6", "on-error-container": "#93000a",
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .order-card { transition: transform 0.2s cubic-bezier(0.4,0,0.2,1), box-shadow 0.2s; }
+    .order-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,74,198,0.1); }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out; }
+    .accordion-content.open { max-height: 2000px; }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+
+<!-- Header -->
+<nav class="w-full top-0 sticky bg-surface border-b border-outline-variant shadow-sm z-50">
+  <div class="flex justify-between items-center px-8 py-4 max-w-[1280px] mx-auto">
+    <div class="flex items-center gap-8">
+      <a href="home.html" class="text-2xl font-bold text-primary tracking-tight">VoucherHub</a>
+      <div class="hidden md:flex relative w-72">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-xl">search</span>
+        <input id="search-input" class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full focus:outline-none focus:ring-2 focus:ring-primary text-sm" placeholder="Tìm kiếm đơn hàng..." type="text" oninput="filterOrders(this.value)"/>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="relative p-2 text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full">
+        <span class="material-symbols-outlined">shopping_cart</span>
+      </a>
+      <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='profile.html'">
+        <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-sm" id="user-avatar">?</div>
+        <div class="hidden lg:block">
+          <p class="text-sm font-medium text-on-surface leading-none" id="user-name">Tài khoản</p>
+          <p class="text-xs text-on-surface-variant">Khách hàng</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="flex max-w-[1280px] mx-auto px-8 min-h-[calc(100vh-80px)]">
+  <!-- Sidebar -->
+  <aside class="hidden md:flex flex-col w-60 sticky top-20 py-4 border-r border-outline-variant shrink-0">
+    <div class="mb-8 px-2">
+      <p class="text-base font-semibold text-primary mb-1">Tài khoản</p>
+      <p class="text-xs text-on-surface-variant">Quản lý giao dịch của bạn</p>
+    </div>
+    <nav class="flex-1 space-y-1">
+      <a href="profile.html" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-xl text-sm font-medium">
+        <span class="material-symbols-outlined">person</span><span>Thông tin cá nhân</span>
+      </a>
+      <a href="orders.html" class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-xl text-sm font-bold">
+        <span class="material-symbols-outlined">receipt_long</span><span>Lịch sử đơn hàng</span>
+      </a>
+      <a href="wallet.html" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-xl text-sm font-medium">
+        <span class="material-symbols-outlined">confirmation_number</span><span>Ví Voucher</span>
+      </a>
+    </nav>
+    <div class="mt-auto border-t border-outline-variant pt-4">
+      <button onclick="handleLogout()" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-error transition-colors text-sm font-medium w-full">
+        <span class="material-symbols-outlined">logout</span><span>Đăng xuất</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 py-8 md:pl-8">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-on-surface mb-2">Lịch sử đơn hàng</h1>
+      <p class="text-on-surface-variant text-sm">Xem lại các giao dịch và trạng thái thanh toán của bạn.</p>
+    </header>
+
+    <!-- Filter tabs -->
+    <div class="flex flex-wrap items-center gap-3 mb-8">
+      <button onclick="setFilter('all')" id="filter-all"
+        class="filter-btn px-4 py-2 bg-primary text-white rounded-full text-sm font-medium transition-all">
+        Tất cả
+      </button>
+      <button onclick="setFilter('thanh_cong')" id="filter-thanh_cong"
+        class="filter-btn px-4 py-2 border border-outline text-on-surface-variant rounded-full text-sm font-medium hover:bg-surface-container-low transition-all">
+        Đã thanh toán
+      </button>
+      <button onclick="setFilter('da_huy')" id="filter-da_huy"
+        class="filter-btn px-4 py-2 border border-outline text-on-surface-variant rounded-full text-sm font-medium hover:bg-surface-container-low transition-all">
+        Đã hủy
+      </button>
+      <button onclick="loadOrders()" class="flex items-center gap-1.5 px-4 py-2 bg-surface hover:bg-surface-container border border-outline rounded-full text-xs font-semibold transition-colors ml-auto">
+        <span class="material-symbols-outlined text-sm">refresh</span>
+        Làm mới
+      </button>
+    </div>
+
+    <!-- Order list -->
+    <div class="space-y-4" id="orders-container">
+      <!-- Skeleton -->
+      <div class="animate-pulse space-y-4" id="orders-skeleton">
+        <div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant">
+          <div class="flex justify-between">
+            <div class="flex gap-4">
+              <div class="w-12 h-12 bg-surface-container rounded-xl"></div>
+              <div class="space-y-2">
+                <div class="h-4 bg-surface-container rounded w-32"></div>
+                <div class="h-3 bg-surface-container rounded w-48"></div>
+              </div>
+            </div>
+            <div class="h-6 bg-surface-container rounded w-24"></div>
+          </div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant">
+          <div class="flex justify-between">
+            <div class="flex gap-4">
+              <div class="w-12 h-12 bg-surface-container rounded-xl"></div>
+              <div class="space-y-2">
+                <div class="h-4 bg-surface-container rounded w-32"></div>
+                <div class="h-3 bg-surface-container rounded w-48"></div>
+              </div>
+            </div>
+            <div class="h-6 bg-surface-container rounded w-24"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="orders-empty" class="hidden text-center py-20">
+      <span class="material-symbols-outlined text-7xl text-outline-variant">receipt_long</span>
+      <h3 class="text-xl font-semibold text-on-surface mt-4">Chưa có đơn hàng nào</h3>
+      <p class="text-on-surface-variant text-sm mt-2">Hãy mua sắm voucher đầu tiên của bạn!</p>
+      <a href="home.html" class="mt-6 inline-flex items-center gap-2 bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:brightness-110 transition-all">
+        <span class="material-symbols-outlined">storefront</span>Khám phá Voucher
+      </a>
+    </div>
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="w-full py-8 bg-surface-container-highest border-t border-outline-variant mt-20">
+  <div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-[1280px] mx-auto gap-4">
+    <span class="text-xl font-semibold text-on-surface">VoucherHub</span>
+    <p class="text-xs text-on-surface-variant">© 2024 VoucherHub. All rights reserved.</p>
+    <div class="flex gap-6">
+      <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Điều khoản</a>
+      <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Bảo mật</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script>
+  let allOrders = [];
+  let currentFilter = 'all';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!Auth.requireAuth()) return;
+
+    const user = Auth.getUser();
+    if (user) {
+      document.getElementById('user-name').textContent = user.email?.split('@')[0] || 'Tài khoản';
+      document.getElementById('user-avatar').textContent = (user.email?.[0] || '?').toUpperCase();
+    }
+    await loadOrders();
+  });
+
+  async function loadOrders() {
+    try {
+      const res = await apiFetch('/api/orders/history');
+      allOrders = res.data || [];
+      document.getElementById('orders-skeleton').remove();
+      renderOrders();
+    } catch (err) {
+      document.getElementById('orders-skeleton').remove();
+      showToast('Không thể tải lịch sử đơn hàng: ' + err.message, 'error');
+      document.getElementById('orders-empty').classList.remove('hidden');
+    }
+  }
+
+  function setFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.className = 'filter-btn px-4 py-2 border border-outline text-on-surface-variant rounded-full text-sm font-medium hover:bg-surface-container-low transition-all';
+    });
+    const active = document.getElementById('filter-' + filter);
+    if (active) active.className = 'filter-btn px-4 py-2 bg-primary text-white rounded-full text-sm font-medium transition-all';
+    renderOrders();
+  }
+
+  function filterOrders(query) {
+    renderOrders(query.toLowerCase());
+  }
+
+  function renderOrders(search = '') {
+    const container = document.getElementById('orders-container');
+    let filtered = allOrders;
+
+    if (currentFilter !== 'all') {
+      filtered = filtered.filter(o => o.trang_thai_thanh_toan === currentFilter);
+    }
+    if (search) {
+      filtered = filtered.filter(o =>
+        (o.ma_dh || '').toLowerCase().includes(search) ||
+        (o.ten_don_hang || '').toLowerCase().includes(search)
+      );
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = '';
+      document.getElementById('orders-empty').classList.remove('hidden');
+      return;
+    }
+    document.getElementById('orders-empty').classList.add('hidden');
+
+    container.innerHTML = filtered.map(order => {
+      const isPaid = order.trang_thai_thanh_toan === 'thanh_cong';
+      const isCancelled = order.trang_thai_thanh_toan === 'da_huy';
+      const statusBadge = isPaid
+        ? `<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-xs font-semibold flex items-center gap-1 shrink-0"><span class="material-symbols-outlined text-[14px]">check_circle</span>Đã thanh toán</span>`
+        : isCancelled
+        ? `<span class="px-3 py-1 bg-error-container text-on-error-container rounded-full text-xs font-semibold flex items-center gap-1 shrink-0"><span class="material-symbols-outlined text-[14px]">error</span>Đã hủy</span>`
+        : `<span class="px-3 py-1 bg-surface-container text-on-surface-variant rounded-full text-xs font-semibold shrink-0">Chờ xử lý</span>`;
+
+      const iconBg = isPaid ? 'bg-primary-fixed' : isCancelled ? 'bg-error-container/20' : 'bg-surface-container';
+      const iconColor = isPaid ? 'text-primary' : isCancelled ? 'text-error' : 'text-on-surface-variant';
+      const icon = isPaid ? 'shopping_bag' : isCancelled ? 'cancel' : 'schedule';
+
+      const vouchers = order.chi_tiet_don_hang || [];
+
+      return `
+        <div class="order-card bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+          <div class="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 ${iconBg} flex items-center justify-center rounded-xl ${iconColor} shrink-0">
+                <span class="material-symbols-outlined">${icon}</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-on-surface">Mã đơn: #${order.ma_dh}</h3>
+                <p class="text-xs text-on-surface-variant">Ngày đặt: ${formatDate(order.ngay_tao_don)}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+              <div class="text-right">
+                <p class="text-xs text-on-surface-variant">Tổng tiền</p>
+                <p class="text-xl font-bold ${isCancelled ? 'text-on-surface-variant line-through' : 'text-primary'}">${formatCurrency(order.tong_tien)}</p>
+              </div>
+              ${statusBadge}
+              <div class="flex gap-2">
+                ${isPaid ? `<button onclick="cancelOrder('${order.ma_dh}', this)" class="px-4 py-2 border border-error text-error text-xs font-semibold rounded-xl hover:bg-error-container transition-all">Hủy đơn</button>` : ''}
+                <button onclick="toggleDetails('${order.ma_dh}')"
+                  class="px-4 py-2 border border-outline text-primary text-sm font-medium rounded-xl hover:bg-primary-container hover:text-on-primary-container transition-all flex items-center gap-1">
+                  Chi tiết <span class="material-symbols-outlined transition-transform text-[18px]" id="icon-${order.ma_dh}">expand_more</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion details -->
+          <div class="accordion-content border-t border-outline-variant bg-surface-container-low" id="acc-${order.ma_dh}">
+            <div class="p-6 space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Sản phẩm -->
+                <div>
+                  <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Sản phẩm đã mua</h4>
+                  <div class="space-y-2">
+                    ${vouchers.length > 0 ? vouchers.map(ct => `
+                      <div class="flex justify-between items-center bg-surface-container-lowest p-3 rounded-lg border border-outline-variant">
+                        <div class="flex items-center gap-3">
+                          <div class="w-9 h-9 bg-surface-container rounded flex items-center justify-center text-on-surface-variant shrink-0">
+                            <span class="material-symbols-outlined text-xl">confirmation_number</span>
+                          </div>
+                          <div>
+                            <p class="text-sm font-semibold text-on-surface">${ct.voucher?.ten_voucher || 'Voucher'}</p>
+                            <p class="text-xs text-on-surface-variant">Số lượng: ${ct.so_luong_mua}</p>
+                          </div>
+                        </div>
+                        <p class="text-sm font-medium text-on-surface shrink-0">${formatCurrency(ct.don_gia_mua * ct.so_luong_mua)}</p>
+                      </div>`).join('')
+                    : '<p class="text-xs text-on-surface-variant italic p-3">Không có dữ liệu sản phẩm</p>'}
+                  </div>
+                </div>
+                <!-- Thông tin thanh toán -->
+                <div>
+                  <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">Thông tin thanh toán</h4>
+                  <div class="space-y-2 text-sm bg-surface-container-lowest p-4 rounded-lg border border-outline-variant">
+                    <div class="flex justify-between">
+                      <span class="text-on-surface-variant">Phương thức:</span>
+                      <span class="font-semibold">${order.phuong_thuc_thanh_toan || 'N/A'}</span>
+                    </div>
+                    <div class="flex justify-between border-t border-outline-variant pt-2 text-primary font-bold">
+                      <span>Thành tiền:</span>
+                      <span>${formatCurrency(order.tong_tien)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              ${isPaid ? `
+              <div class="flex justify-end gap-3 pt-2 border-t border-outline-variant">
+                <a href="wallet.html" class="px-4 py-2 text-sm bg-primary text-white rounded-xl font-medium hover:shadow-lg transition-all active:scale-95 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-[18px]">confirmation_number</span>Xem mã Voucher
+                </a>
+              </div>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function toggleDetails(orderId) {
+    const accordion = document.getElementById('acc-' + orderId);
+    const icon = document.getElementById('icon-' + orderId);
+    accordion.classList.toggle('open');
+    icon.style.transform = accordion.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+  }
+
+  async function cancelOrder(maDh, btn) {
+    if (!confirm('Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.')) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Đang hủy...';
+    try {
+      await apiFetch(`/api/orders/${maDh}/cancel`, { method: 'POST' });
+      showToast('Hủy đơn hàng thành công. Tiền sẽ được hoàn lại.', 'success');
+      await loadOrders();
+    } catch (err) {
+      showToast('Không thể hủy đơn: ' + err.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Hủy đơn';
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await apiFetch('/api/auth/logout', { method: 'POST' });
+    } catch (_) {}
+    Auth.clear();
+    window.location.href = 'index.html';
+  }
+</script>
+</body>
+</html>

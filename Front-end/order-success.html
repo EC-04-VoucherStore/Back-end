@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html class="light" lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Đặt hàng thành công - VoucherHub</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#004ac6", "secondary": "#006c49", "error": "#ba1a1a",
+            "on-primary": "#ffffff", "on-secondary": "#ffffff",
+            "primary-container": "#2563eb", "on-primary-container": "#eeefff",
+            "secondary-container": "#6cf8bb", "on-secondary-container": "#00714d",
+            "secondary-fixed": "#6ffbbe", "on-secondary-fixed": "#002113",
+            "surface": "#f8f9ff", "on-surface": "#0b1c30",
+            "surface-container": "#e5eeff", "surface-container-low": "#eff4ff",
+            "surface-container-lowest": "#ffffff", "surface-container-high": "#dce9ff",
+            "surface-container-highest": "#d3e4fe",
+            "on-surface-variant": "#434655", "outline": "#737686",
+            "outline-variant": "#c3c6d7", "background": "#f8f9ff",
+            "on-background": "#0b1c30",
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    .receipt-dash {
+      background-image: linear-gradient(to right, #cbd5e1 50%, rgba(255,255,255,0) 0%);
+      background-position: bottom; background-size: 8px 1px; background-repeat: repeat-x;
+    }
+    .confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.1); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .bounce-in { animation: bounceIn 0.8s ease-out forwards; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="w-full top-0 sticky bg-surface border-b border-outline-variant shadow-sm z-50">
+  <div class="flex justify-between items-center px-8 py-4 max-w-[1280px] mx-auto">
+    <a href="home.html" class="text-2xl font-bold text-primary tracking-tight">VoucherHub</a>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="p-2 text-on-surface-variant hover:bg-surface-container-low transition-colors rounded-full">
+        <span class="material-symbols-outlined">shopping_cart</span>
+      </a>
+      <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-sm" id="user-avatar">?</div>
+    </div>
+  </div>
+</header>
+
+<canvas class="confetti-canvas" id="confetti"></canvas>
+
+<!-- Main -->
+<main class="flex-grow flex items-center justify-center p-4 md:p-8 z-10">
+  <div class="w-full max-w-lg bg-surface-container-lowest rounded-xl shadow-lg overflow-hidden border border-outline-variant relative">
+
+    <!-- Success Header -->
+    <div class="pt-12 pb-8 px-6 text-center">
+      <div class="inline-flex items-center justify-center w-20 h-20 bg-secondary-container text-on-secondary-container rounded-full mb-6 bounce-in">
+        <span class="material-symbols-outlined text-5xl" style="font-variation-settings:'FILL' 1">check_circle</span>
+      </div>
+      <h1 class="text-2xl font-bold text-on-surface mb-2">Đặt hàng và Thanh toán thành công!</h1>
+      <p class="text-on-surface-variant text-sm">Hệ thống đã ghi nhận giao dịch của bạn. Vui lòng kiểm tra ví Voucher để sử dụng.</p>
+    </div>
+
+    <!-- Receipt Details -->
+    <div class="px-6 pb-8">
+      <div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/50">
+        <div class="flex justify-between items-center mb-6">
+          <span class="text-sm text-on-surface-variant font-medium">Chi tiết giao dịch</span>
+          <span class="px-3 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-full text-[10px] font-bold uppercase tracking-wider">Đã thanh toán</span>
+        </div>
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <span class="text-on-surface-variant text-sm">Mã đơn hàng</span>
+            <span class="font-bold text-primary" id="order-id">#VH-xxxxxxxx</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-on-surface-variant text-sm">Thời gian</span>
+            <span class="text-on-surface text-sm" id="order-time">--</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-on-surface-variant text-sm">Phương thức</span>
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary text-lg">account_balance_wallet</span>
+              <span class="text-on-surface text-sm" id="order-method">--</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="receipt-dash h-px w-full my-6 opacity-30"></div>
+
+          <div class="flex justify-between items-end">
+            <span class="text-on-surface-variant text-sm">Tổng cộng</span>
+            <span class="text-xl font-bold text-primary" id="order-total">0đ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="mt-8 space-y-3">
+        <a href="wallet.html"
+          class="w-full py-4 bg-primary text-white rounded-xl font-semibold text-base hover:brightness-110 active:scale-[0.98] transition-all flex justify-center items-center gap-2 shadow-md">
+          <span class="material-symbols-outlined">confirmation_number</span>
+          Xem mã Voucher của bạn
+        </a>
+        <a href="home.html"
+          class="w-full py-4 bg-transparent border border-outline text-primary rounded-xl font-semibold text-base hover:bg-surface-container-high active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+          <span class="material-symbols-outlined">shopping_bag</span>
+          Tiếp tục mua sắm
+        </a>
+        <a href="orders.html"
+          class="w-full py-3 text-center text-sm text-on-surface-variant hover:text-primary transition-colors block">
+          Xem lịch sử đơn hàng
+        </a>
+      </div>
+    </div>
+
+    <!-- Visual flare -->
+    <div class="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+      <span class="material-symbols-outlined text-9xl">shopping_cart_checkout</span>
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="w-full py-8 bg-surface-container-highest border-t border-outline-variant z-10">
+  <div class="flex flex-col md:flex-row justify-between items-center px-8 max-w-[1280px] mx-auto">
+    <span class="text-xl font-semibold text-on-surface mb-2 md:mb-0">VoucherHub</span>
+    <p class="text-xs text-on-surface-variant">© 2024 VoucherHub. All rights reserved.</p>
+    <div class="flex gap-6 mt-2 md:mt-0">
+      <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Điều khoản</a>
+      <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Bảo mật</a>
+      <a class="text-xs text-on-surface-variant hover:text-primary transition-colors" href="#">Liên hệ</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!Auth.requireAuth()) return;
+
+    const user = Auth.getUser();
+    if (user) {
+      document.getElementById('user-avatar').textContent = (user.email?.[0] || '?').toUpperCase();
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const isStripe = params.get('stripe') === '1';
+
+    if (isStripe) {
+      // ── Thanh toán qua Stripe: đọc tham số từ URL ──
+      const maDh = params.get('ma_dh') || 'N/A';
+      const total = parseFloat(params.get('total') || '0');
+      document.getElementById('order-id').textContent = '#' + maDh;
+      document.getElementById('order-time').textContent = new Date().toLocaleString('vi-VN');
+      document.getElementById('order-total').textContent = formatCurrency(total);
+      document.getElementById('order-method').textContent = 'Thẻ Quốc tế (Stripe)';
+    } else {
+      // ── Thanh toán MoMo / VNPay: đọc từ sessionStorage ──
+      const resultStr = sessionStorage.getItem('order_result');
+      if (resultStr) {
+        const result = JSON.parse(resultStr);
+        document.getElementById('order-id').textContent = '#' + (result.ma_dh || 'N/A');
+        document.getElementById('order-time').textContent = result.thoi_gian || new Date().toLocaleString('vi-VN');
+        document.getElementById('order-total').textContent = formatCurrency(result.tong_tien || 0);
+        const methodMap = { vnpay: 'VNPay (QR Code)', momo: 'Ví MoMo', stripe: 'Thẻ Quốc tế (Stripe)' };
+        document.getElementById('order-method').textContent = methodMap[result.phuong_thuc] || result.phuong_thuc || 'VNPay';
+        sessionStorage.removeItem('order_result');
+      }
+    }
+
+    // Confetti animation
+    startConfetti();
+  });
+
+  function startConfetti() {
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height - canvas.height;
+        this.size = Math.random() * 8 + 4;
+        this.speed = Math.random() * 3 + 2;
+        this.color = ['#004ac6', '#006c49', '#6cf8bb', '#b4c5ff', '#ffddb8'][Math.floor(Math.random() * 5)];
+        this.angle = Math.random() * 6.28;
+        this.spin = Math.random() * 0.2 - 0.1;
+        this.life = 0;
+      }
+      update() {
+        this.y += this.speed;
+        this.x += Math.sin(this.angle) * 1.5;
+        this.angle += this.spin;
+        this.life++;
+        if (this.y > canvas.height) { this.y = -20; this.x = Math.random() * canvas.width; this.life = 0; }
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.min(1, (300 - this.life) / 100);
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.fillStyle = this.color;
+        ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size * 0.5);
+        ctx.restore();
+      }
+    }
+
+    for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+    let frameCount = 0;
+    function animate() {
+      frameCount++;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      if (frameCount < 300) requestAnimationFrame(animate);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    animate();
+  }
+</script>
+</body>
+</html>

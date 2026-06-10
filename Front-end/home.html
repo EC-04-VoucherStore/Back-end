@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trang chủ - VoucherHub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-surface-variant":"#434655","surface":"#f8f9ff","on-secondary":"#ffffff",
+          "outline-variant":"#c3c6d7","outline":"#737686","surface-bright":"#f8f9ff",
+          "primary-container":"#2563eb","surface-container-high":"#dce9ff",
+          "inverse-on-surface":"#eaf1ff","background":"#f8f9ff",
+          "surface-variant":"#d3e4fe","on-tertiary":"#ffffff","on-error":"#ffffff",
+          "inverse-surface":"#213145","surface-container-lowest":"#ffffff",
+          "tertiary-fixed":"#ffddb8","tertiary":"#784b00","inverse-primary":"#b4c5ff",
+          "on-error-container":"#93000a","on-background":"#0b1c30",
+          "surface-dim":"#cbdbf5","surface-container-low":"#eff4ff",
+          "primary":"#004ac6","surface-container-highest":"#d3e4fe",
+          "error-container":"#ffdad6","on-primary":"#ffffff","on-surface":"#0b1c30",
+          "primary-fixed-dim":"#b4c5ff","secondary":"#006c49",
+          "on-secondary-container":"#00714d","secondary-container":"#6cf8bb",
+          "on-primary-fixed":"#00174b","surface-tint":"#0053db",
+          "surface-container":"#e5eeff","primary-fixed":"#dbe1ff",
+          "error":"#ba1a1a","secondary-fixed":"#6ffbbe","on-primary-container":"#eeefff"
+        },
+        spacing: {"base":"8px","gutter":"24px","container-max":"1280px","margin-mobile":"16px","margin-desktop":"32px"},
+        fontFamily: {"headline-md":["Inter"],"body-lg":["Inter"],"headline-lg":["Inter"],"body-md":["Inter"],"label-sm":["Inter"],"label-md":["Inter"],"display-lg":["Inter"]},
+        fontSize: {
+          "headline-md":["24px",{"lineHeight":"32px","fontWeight":"600"}],
+          "body-lg":["18px",{"lineHeight":"28px","fontWeight":"400"}],
+          "headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],
+          "body-md":["16px",{"lineHeight":"24px","fontWeight":"400"}],
+          "label-sm":["12px",{"lineHeight":"16px","fontWeight":"600"}],
+          "label-md":["14px",{"lineHeight":"20px","fontWeight":"500"}],
+          "display-lg":["48px",{"lineHeight":"56px","fontWeight":"700"}]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: #c3c6d7; border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #004ac6; }
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+<!-- Header -->
+<header class="bg-surface shadow-sm fixed top-0 left-0 w-full z-50 border-b border-outline-variant/30">
+  <div class="flex justify-between items-center px-6 h-16 max-w-[1280px] mx-auto">
+    <div class="flex items-center gap-6">
+      <a class="text-xl font-bold text-primary" href="home.html">VoucherHub</a>
+      <div class="hidden md:flex relative w-80">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+        <input id="search-input" class="w-full bg-surface-container border border-outline-variant rounded-full py-2 pl-10 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none" placeholder="Tìm tên voucher hoặc thương hiệu..." type="text"/>
+      </div>
+    </div>
+    <nav class="hidden md:flex items-center gap-6">
+      <a class="text-primary border-b-2 border-primary pb-1 text-sm font-semibold" href="home.html">Trang chủ</a>
+      <a class="text-on-surface-variant hover:text-primary text-sm" href="wallet.html">Ví Voucher</a>
+      <a class="text-on-surface-variant hover:text-primary text-sm" href="orders.html">Đơn hàng</a>
+    </nav>
+    <div class="flex items-center gap-4">
+      <a href="cart.html" class="text-on-surface-variant hover:text-primary transition-colors relative p-2">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span id="cart-badge" class="absolute top-0 right-0 bg-error text-white rounded-full text-[10px] w-4 h-4 flex items-center justify-center hidden">0</span>
+      </a>
+      <div class="w-9 h-9 rounded-full bg-surface-variant overflow-hidden cursor-pointer border border-outline-variant flex items-center justify-center" onclick="window.location.href='profile.html'">
+        <span class="material-symbols-outlined text-on-surface-variant text-[20px]" id="user-icon">person</span>
+      </div>
+      <span class="hidden md:block text-sm font-medium text-on-surface" id="user-name">Tài khoản</span>
+    </div>
+  </div>
+</header>
+
+<main class="flex-grow pt-20 pb-12 px-6 max-w-[1280px] mx-auto w-full">
+  <!-- Hero Banner -->
+  <section class="mb-10 rounded-xl overflow-hidden shadow-sm relative h-56 md:h-80">
+    <img alt="Hero Banner" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=1280&q=80"/>
+    <div class="absolute inset-0 bg-gradient-to-r from-on-background/80 to-transparent flex items-center p-8 md:p-12">
+      <div class="max-w-lg text-white">
+        <h1 class="text-3xl md:text-5xl font-bold mb-4">Siêu Sale Giữa Tháng</h1>
+        <p class="text-base md:text-lg mb-6 opacity-90">Giảm tới 50% cho tất cả voucher Ăn uống &amp; Spa. Chớp ngay cơ hội!</p>
+        <a href="#voucher-grid" class="bg-primary text-white font-semibold px-6 py-3 rounded-xl hover:brightness-110 transition-all inline-block">Khám phá ngay</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="flex flex-col md:flex-row gap-8">
+    <!-- Sidebar Filters -->
+    <aside class="w-full md:w-64 flex-shrink-0">
+      <div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm border border-outline-variant sticky top-24 space-y-6 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
+        <h2 class="font-semibold text-lg border-b border-outline-variant pb-3 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary">filter_alt</span>Bộ lọc
+        </h2>
+
+        <!-- Danh mục -->
+        <div>
+          <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider mb-3">Danh mục</h3>
+          <div id="category-filter-list" class="space-y-2.5 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <input type="radio" name="category" value="" checked class="text-primary" onchange="filterByCategory('')"/>
+              <span class="text-sm text-on-surface-variant">Tất cả</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Khoảng giá -->
+        <div>
+          <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider mb-3">Giá tối đa</h3>
+          <input id="price-range" type="range" min="10000" max="1000000" step="10000" value="1000000" class="w-full accent-primary"/>
+          <div class="flex justify-between text-xs text-outline mt-1">
+            <span>0đ</span>
+            <span id="price-display" class="font-semibold text-primary">Tất cả</span>
+          </div>
+        </div>
+
+        <!-- Hiệu lực -->
+        <div>
+          <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider mb-3">Hiệu lực</h3>
+          <select id="validity-filter" class="w-full bg-white border border-outline-variant rounded-lg py-2 px-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none" onchange="fetchFilteredVouchers()">
+            <option value="">Tất cả</option>
+            <option value="dang_dien_ra">Đang diễn ra</option>
+            <option value="sap_dien_ra">Sắp diễn ra</option>
+            <option value="het_han">Hết hạn</option>
+          </select>
+        </div>
+
+        <!-- Mức giảm giá -->
+        <div>
+          <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider mb-3">Mức giảm giá</h3>
+          <select id="discount-filter" class="w-full bg-white border border-outline-variant rounded-lg py-2 px-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none" onchange="fetchFilteredVouchers()">
+            <option value="0">Tất cả</option>
+            <option value="10">Giảm từ 10% trở lên</option>
+            <option value="20">Giảm từ 20% trở lên</option>
+            <option value="30">Giảm từ 30% trở lên</option>
+            <option value="50">Giảm từ 50% trở lên</option>
+          </select>
+        </div>
+
+        <!-- Thương hiệu -->
+        <div>
+          <h3 class="text-xs font-bold text-on-surface uppercase tracking-wider mb-3">Thương hiệu</h3>
+          <select id="partner-filter" class="w-full bg-white border border-outline-variant rounded-lg py-2 px-3 text-sm focus:ring-1 focus:ring-primary focus:outline-none" onchange="fetchFilteredVouchers()">
+            <option value="">Tất cả</option>
+          </select>
+        </div>
+
+        <button onclick="fetchFilteredVouchers()" class="w-full py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:brightness-110 transition-all shadow-sm">
+          Áp dụng bộ lọc
+        </button>
+      </div>
+    </aside>
+
+    <!-- Voucher Grid -->
+    <section class="flex-grow" id="voucher-grid-section">
+      <div class="flex justify-between items-center mb-6">
+        <div>
+          <h2 id="grid-title" class="text-2xl font-bold hidden md:block">Voucher Nổi Bật</h2>
+          <p id="grid-count" class="text-xs text-outline mt-1"></p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-outline hidden sm:inline">Sắp xếp:</span>
+          <select id="sort-select" class="bg-white border border-outline-variant rounded-lg py-1.5 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none">
+            <option value="">Mới nhất</option>
+            <option value="price_asc">Giá: Thấp đến Cao</option>
+            <option value="price_desc">Giá: Cao đến Thấp</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="voucher-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Skeleton loading -->
+        <div class="animate-pulse bg-surface-container-lowest rounded-xl h-72 border border-outline-variant"></div>
+        <div class="animate-pulse bg-surface-container-lowest rounded-xl h-72 border border-outline-variant"></div>
+        <div class="animate-pulse bg-surface-container-lowest rounded-xl h-72 border border-outline-variant"></div>
+      </div>
+
+      <div class="mt-10 flex justify-center">
+        <button id="load-more-btn" onclick="loadMore()" class="hidden items-center gap-2 px-8 py-3 bg-surface-container-high text-primary font-semibold rounded-full hover:bg-surface-variant transition-colors border border-outline-variant">
+          Xem thêm <span class="material-symbols-outlined text-[18px]">expand_more</span>
+        </button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="bg-surface-container mt-auto border-t border-outline-variant/30">
+  <div class="w-full py-10 px-6 flex flex-col md:flex-row justify-between items-start max-w-[1280px] mx-auto gap-8">
+    <div class="flex flex-col gap-3">
+      <span class="text-xl font-bold text-on-surface">VoucherHub</span>
+      <p class="text-sm text-on-surface-variant max-w-xs">Nền tảng mua sắm voucher uy tín, mang đến hàng ngàn ưu đãi hấp dẫn mỗi ngày.</p>
+      <p class="text-xs text-on-surface-variant">© 2024 VoucherHub. All rights reserved.</p>
+    </div>
+    <div class="flex flex-wrap gap-x-8 gap-y-3">
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="#">Điều khoản</a>
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="#">Bảo mật</a>
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="#">Trợ giúp</a>
+      <a class="text-sm text-on-surface-variant hover:text-primary" href="#">Liên hệ</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script>
+  let currentKeyword = '', selectedCategory = '', selectedPartner = '', maxPrice = 1000000, minDiscount = 0, sortOption = '', currentPage = 1;
+  const PAGE_SIZE = 9;
+  let allVouchers = [];
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!Auth.requireAuth()) return;
+    const user = Auth.getUser();
+    if (user) {
+      document.getElementById('user-name').textContent = user.email?.split('@')[0] || 'Tài khoản';
+      document.getElementById('user-icon').textContent = (user.email?.[0] || 'P').toUpperCase();
+      
+      // Nếu là admin, thêm link quản trị vào header
+      if (user.vai_tro === 'admin') {
+        const nav = document.querySelector('header nav');
+        if (nav) {
+          const adminLink = document.createElement('a');
+          adminLink.className = 'text-error hover:text-error/80 text-sm font-bold flex items-center gap-1 ml-2';
+          adminLink.href = 'admin-dashboard.html';
+          adminLink.innerHTML = '<span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>Quản trị';
+          nav.appendChild(adminLink);
+        }
+      }
+    }
+
+    // Lấy keyword từ URL nếu có
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('q')) {
+      currentKeyword = urlParams.get('q');
+      document.getElementById('search-input').value = currentKeyword;
+    }
+
+    await Promise.all([loadCategories(), loadPartners(), fetchFilteredVouchers(), loadCartBadge()]);
+  });
+
+  async function loadCartBadge() {
+    try {
+      const res = await apiFetch('/api/orders/cart');
+      const badge = document.getElementById('cart-badge');
+      if (res.data?.length > 0) { badge.textContent = res.data.length; badge.classList.remove('hidden'); }
+    } catch (_) {}
+  }
+
+  async function loadCategories() {
+    try {
+      const res = await apiFetch('/api/vouchers/categories');
+      const container = document.getElementById('category-filter-list');
+      const parents = (res.data || []).filter(c => !c.ma_taxon_cha);
+      let html = `<label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="category" value="" checked class="text-primary" onchange="filterByCategory('')"/><span class="text-sm text-on-surface-variant">Tất cả</span></label>`;
+      parents.forEach(cat => {
+        html += `<label class="flex items-center gap-3 cursor-pointer"><input type="radio" name="category" value="${cat.ma_taxon}" class="text-primary" onchange="filterByCategory('${cat.ma_taxon}')"/><span class="text-sm text-on-surface-variant">${cat.ten_taxon}</span></label>`;
+      });
+      container.innerHTML = html;
+    } catch (err) { console.error(err); }
+  }
+
+  async function loadPartners() {
+    try {
+      const res = await apiFetch('/api/vouchers/partners/active');
+      const select = document.getElementById('partner-filter');
+      const options = (res.data || []).map(partner => {
+        return `<option value="${partner.ma_dt}">${partner.ten_doanh_nghiep}</option>`;
+      });
+      select.innerHTML = `<option value="">Tất cả</option>${options.join('')}`;
+    } catch (err) { console.error(err); }
+  }
+
+  async function loadHomepageData() {
+    try {
+      const res = await apiFetch('/api/vouchers/homepage');
+      allVouchers = res.featured_vouchers || [];
+      renderVouchers(allVouchers);
+    } catch (err) { showToast(err.message, 'error'); }
+  }
+
+  function buildFilterParams(page = 1) {
+    const params = new URLSearchParams({
+      limit: PAGE_SIZE,
+      page,
+    });
+
+    if (currentKeyword) params.set('keyword', currentKeyword);
+    if (selectedCategory) params.set('ma_taxon', selectedCategory);
+    if (selectedPartner) params.set('ma_dt', selectedPartner);
+    if (maxPrice < 1000000) params.set('gia_max', maxPrice);
+    if (minDiscount > 0) params.set('giam_min', minDiscount);
+
+    const validity = document.getElementById('validity-filter').value;
+    if (validity) params.set('hieu_luc', validity);
+
+    return params;
+  }
+
+  async function fetchFilteredVouchers() {
+    currentPage = 1;
+    try {
+      selectedPartner = document.getElementById('partner-filter').value;
+      minDiscount = parseInt(document.getElementById('discount-filter').value || '0');
+      const params = buildFilterParams(currentPage);
+      const res = await apiFetch(`/api/vouchers?${params}`);
+      let list = res.data || [];
+      if (sortOption === 'price_asc') list.sort((a, b) => a.gia_ban - b.gia_ban);
+      else if (sortOption === 'price_desc') list.sort((a, b) => b.gia_ban - a.gia_ban);
+      allVouchers = list;
+      renderVouchers(list);
+      document.getElementById('grid-title').textContent = selectedCategory || selectedPartner || currentKeyword || maxPrice < 1000000 || minDiscount > 0 ? 'Kết quả lọc' : 'Voucher Nổi Bật';
+    } catch (err) { console.error(err); }
+  }
+
+  function filterByCategory(maTaxon) { selectedCategory = maTaxon; fetchFilteredVouchers(); }
+
+  // Khoảng giá
+  const priceRange = document.getElementById('price-range');
+  const priceDisplay = document.getElementById('price-display');
+  priceRange.addEventListener('input', e => {
+    maxPrice = parseInt(e.target.value);
+    priceDisplay.textContent = maxPrice === 1000000 ? 'Tất cả' : formatCurrency(maxPrice);
+  });
+  priceRange.addEventListener('change', fetchFilteredVouchers);
+
+  // Tìm kiếm
+  let searchTimeout;
+  document.getElementById('search-input').addEventListener('input', e => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => { currentKeyword = e.target.value.trim(); fetchFilteredVouchers(); }, 500);
+  });
+
+  // Sắp xếp
+  document.getElementById('sort-select').addEventListener('change', e => { sortOption = e.target.value; fetchFilteredVouchers(); });
+
+  function renderVouchers(vouchers) {
+    const container = document.getElementById('voucher-grid');
+    const countEl = document.getElementById('grid-count');
+    if (!vouchers || vouchers.length === 0) {
+      container.innerHTML = `<div class="col-span-full py-16 text-center text-on-surface-variant flex flex-col items-center gap-3"><span class="material-symbols-outlined text-5xl text-outline-variant">find_in_page</span><p class="text-base">Không tìm thấy voucher phù hợp.</p></div>`;
+      countEl.textContent = '';
+      document.getElementById('load-more-btn').classList.add('hidden');
+      return;
+    }
+    countEl.textContent = `Tìm thấy ${vouchers.length} voucher`;
+
+    container.innerHTML = vouchers.map((v, idx) => {
+      const conLai = v.so_luong_phat_hanh - v.so_luong_da_ban;
+      const pct = Math.round((v.so_luong_da_ban / v.so_luong_phat_hanh) * 100);
+      const disc = Math.round(((v.gia_goc - v.gia_ban) / v.gia_goc) * 100);
+      const img = getVoucherImage(v, idx);
+      return `
+        <div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden hover:shadow-md transition-shadow flex flex-col group cursor-pointer" onclick="goToDetail('${v.ma_voucher}')">
+          <div class="relative aspect-[4/3] overflow-hidden bg-surface-container">
+            <img alt="${v.ten_voucher}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="${img}" loading="lazy" onerror="handleVoucherImageError(this, '${v.ten_voucher || ''}')"/>
+            <div class="absolute top-2 left-2 flex flex-col gap-1">
+              ${disc > 0 ? `<span class="bg-error text-white text-[11px] font-bold px-2 py-0.5 rounded">-${disc}%</span>` : ''}
+              ${conLai <= 10 ? `<span class="bg-on-background/70 text-white text-[10px] px-2 py-0.5 rounded">Sắp hết</span>` : ''}
+            </div>
+          </div>
+          <div class="p-4 flex-grow flex flex-col">
+            <h3 class="text-sm font-bold text-on-surface line-clamp-2 mb-1 group-hover:text-primary transition-colors">${v.ten_voucher}</h3>
+            <p class="text-xs text-outline mb-3 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">storefront</span>${v.doi_tac?.ten_doanh_nghiep || 'Hệ thống'}
+            </p>
+            <div class="mt-auto">
+              <div class="flex items-baseline gap-2 mb-2">
+                <span class="text-base font-bold text-error">${formatCurrency(v.gia_ban)}</span>
+                <span class="text-xs text-outline line-through">${formatCurrency(v.gia_goc)}</span>
+              </div>
+              <div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden mb-1">
+                <div class="h-full bg-error" style="width:${pct}%"></div>
+              </div>
+              <div class="flex justify-between text-[10px] text-outline">
+                <span>Đã bán ${v.so_luong_da_ban}</span>
+                <span>Còn ${conLai}</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+
+    document.getElementById('load-more-btn').classList.toggle('hidden', vouchers.length < PAGE_SIZE);
+    document.getElementById('load-more-btn').classList.toggle('flex', vouchers.length >= PAGE_SIZE);
+  }
+
+  async function loadMore() {
+    currentPage++;
+    try {
+      const params = buildFilterParams(currentPage);
+      const res = await apiFetch(`/api/vouchers?${params}`);
+      const more = res.data || [];
+      if (more.length > 0) {
+        const existingIds = new Set(allVouchers.map(v => v.ma_voucher));
+        const uniqueMore = more.filter(v => !existingIds.has(v.ma_voucher));
+        if (uniqueMore.length > 0) {
+          allVouchers = [...allVouchers, ...uniqueMore];
+          renderVouchers(allVouchers);
+        }
+      }
+      if (more.length < PAGE_SIZE) document.getElementById('load-more-btn').classList.add('hidden');
+    } catch (err) { console.error(err); }
+  }
+
+  function goToDetail(maVoucher) {
+    if (window.location.protocol === 'file:') {
+      window.location.href = `detail.html?id=${maVoucher}`;
+    } else {
+      window.location.href = `detail?id=${maVoucher}`;
+    }
+  }
+</script>
+</body>
+</html>
