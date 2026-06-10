@@ -8,6 +8,11 @@ import { RedisService } from './redis.service';
     {
       provide: 'REDIS_CLIENT',
       useFactory: () => {
+        // Nếu có biến môi trường REDIS_URL, ioredis sẽ tự động hiểu và bật TLS dựa trên 'rediss://'
+        if (process.env.REDIS_URL) {
+          return new Redis(process.env.REDIS_URL);
+        }
+        
         return new Redis({
           host: process.env.REDIS_HOST || 'localhost',
           port: parseInt(process.env.REDIS_PORT!) || 6379,
