@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SupabaseModule } from './supabase/supabase.module';
+import { RedisModule } from './common/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CustomersModule } from './modules/customers/customers.module';
 import { VouchersModule } from './modules/vouchers/vouchers.module';
@@ -20,6 +21,7 @@ import { RedemptionModule } from './modules/redemption/redemption.module';
     AdminModule,
     CronjobModule,
     RedemptionModule,
+    RedisModule,
   ],
   controllers: [],
   providers: [],
