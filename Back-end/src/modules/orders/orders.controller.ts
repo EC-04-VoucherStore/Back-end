@@ -6,7 +6,9 @@ import {
   Param,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { AddToCartDto } from './dto/add-to-cart.dto';
@@ -132,22 +134,36 @@ export class OrdersController {
   }
 
   // GET /api/orders/stripe/success → Stripe callback sau khi thanh toán thành công
-  // NestJS sẽ tự redirect về frontend với thông tin đơn hàng
+  // Stripe gọi URL này không có Bearer token → không dùng @CurrentToken
   @Get('stripe/success')
   async stripeSuccess(
+    @Query('session_id') sessionId: string,
+    @Res() res: Response,
+  ) {
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+    try {
+      // Gọi xử lý tạo đơn hàng trực tiếp ở Backend
+      const result = await this.ordersService.handleStripeSuccess('', sessionId);
+      return res.redirect(`${frontendUrl}/order-success?stripe=1&ma_dh=${result.ma_dh}&total=${result.tong_tien}`);
+    } catch (err) {
+      // Nếu có lỗi, chuyển hướng về trang lỗi hoặc checkout kèm báo lỗi
+      return res.redirect(`${frontendUrl}/checkout?stripe_error=${encodeURIComponent(err.message || 'Lỗi thanh toán')}`);
+    }
+  }
+
+  // POST /api/orders/stripe/confirm → Frontend gọi sau khi redirect về, kèm token của user
+  @Post('stripe/confirm')
+  async stripeConfirm(
     @CurrentToken() token: string,
     @Query('session_id') sessionId: string,
   ) {
-    const result = await this.ordersService.handleStripeSuccess(token, sessionId);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    // Trả về redirect HTML đơn giản
-    return `<html><head><meta http-equiv="refresh" content="0;url=${frontendUrl}/order-success?stripe=1&ma_dh=${result.ma_dh}&total=${result.tong_tien}"></head><body>Đang chuyển hướng...</body></html>`;
+    return this.ordersService.handleStripeSuccess(token, sessionId);
   }
 
   // GET /api/orders/stripe/cancel  → Stripe callback khi người dùng huỷ
   @Get('stripe/cancel')
-  stripeCancel() {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    return `<html><head><meta http-equiv="refresh" content="0;url=${frontendUrl}/checkout?stripe_cancelled=1"></head><body>Đang chuyển hướng...</body></html>`;
+  stripeCancel(@Res() res: Response) {
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+    return res.redirect(`${frontendUrl}/checkout?stripe_cancelled=1`);
   }
 }
