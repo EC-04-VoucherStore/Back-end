@@ -21,11 +21,6 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "types": ["jest"]
-<<<<<<< HEAD:tsconfig.json
-  }
-}
-=======
   },
   "exclude": ["*.ts"]
 }
->>>>>>> quang:Back-end/tsconfig.json
