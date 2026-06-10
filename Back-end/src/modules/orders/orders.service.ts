@@ -38,36 +38,80 @@ export class OrdersService {
     return kh.ma_kh as string;
   }
 
-  // ─── GIỎ HÀNG: XEM ──────────────────────────────────────────────────────────
+ // ─── GIỎ HÀNG: XEM ──────────────────────────────────────────────────────────
   async getCart(accessToken: string) {
     const client = this.supabaseService.getClient();
+    const redisClient = this.redisService.getClient();
     const maKh = await this.getKhachHang(accessToken);
+    const cartKey = `cart:${maKh}`;
 
-    const { data, error } = await client
-      .from('chi_tiet_gio_hang')
-      .select(`
-        ma_ctgh, so_luong_mua,
-        voucher ( ma_voucher, ten_voucher, gia_goc, gia_ban, ngay_kt, so_luong_phat_hanh, so_luong_da_ban, link_voucher_banner )
-      `)
-      .eq('ma_kh', maKh);
+    // 1. Lấy từ Redis
+    let cartItems: { ma_voucher: string; so_luong_mua: number }[] = [];
+    const redisData = await redisClient.hgetall(cartKey);
 
-    if (error) throw new InternalServerErrorException(error.message);
+    if (Object.keys(redisData).length > 0) {
+      cartItems = Object.entries(redisData).map(([maVoucher, soLuong]) => ({
+        ma_voucher: maVoucher,
+        so_luong_mua: parseInt(soLuong, 10),
+      }));
+    } else {
+      // 2. Cache Miss: Lấy từ DB
+      const { data: dbCart, error } = await client
+        .from('chi_tiet_gio_hang')
+        .select('ma_voucher, so_luong_mua')
+        .eq('ma_kh', maKh);
 
-    // Tính tổng tiền giỏ hàng
-    const tongTien = (data ?? []).reduce((sum: number, item: any) => {
-      return sum + (item.voucher?.gia_ban ?? 0) * item.so_luong_mua;
-    }, 0);
+      if (error) throw new InternalServerErrorException(error.message);
 
-    return { data: data ?? [], tong_tien: tongTien };
+      if (dbCart && dbCart.length > 0) {
+        const pipeline = redisClient.pipeline();
+        dbCart.forEach(item => {
+          pipeline.hset(cartKey, item.ma_voucher, item.so_luong_mua);
+          cartItems.push({
+            ma_voucher: item.ma_voucher,
+            so_luong_mua: item.so_luong_mua,
+          });
+        });
+        pipeline.expire(cartKey, 7 * 24 * 60 * 60);
+        await pipeline.exec();
+      }
+    }
+
+    if (cartItems.length === 0) return { data: [], tong_tien: 0 };
+
+    // 3. Truy vấn thêm thông tin chi tiết voucher từ DB để tính tiền và trả về đúng format cũ
+    const voucherIds = cartItems.map(item => item.ma_voucher);
+    const { data: vouchers, error: vError } = await client
+      .from('voucher')
+      .select('ma_voucher, ten_voucher, gia_goc, gia_ban, ngay_kt, so_luong_phat_hanh, so_luong_da_ban, link_voucher_banner, trang_thai')
+      .in('ma_voucher', voucherIds);
+
+    if (vError) throw new InternalServerErrorException(vError.message);
+
+    let tongTien = 0;
+    const resultData = cartItems.map(item => {
+      const v = vouchers?.find(v => v.ma_voucher === item.ma_voucher);
+      if (v) tongTien += v.gia_ban * item.so_luong_mua;
+      return {
+        ma_ctgh: `REDIS-${item.ma_voucher}`, // Giả lập ma_ctgh để Client không bị lỗi thiếu trường dữ liệu
+        so_luong_mua: item.so_luong_mua,
+        ma_voucher: item.ma_voucher,
+        voucher: v
+      };
+    });
+
+    return { data: resultData, tong_tien: tongTien };
   }
 
   // ─── GIỎ HÀNG: THÊM ─────────────────────────────────────────────────────────
   async addToCart(accessToken: string, dto: AddToCartDto) {
     const client = this.supabaseService.getClient();
+    const redisClient = this.redisService.getClient();
     const maKh = await this.getKhachHang(accessToken);
     const now = new Date().toISOString();
+    const cartKey = `cart:${maKh}`;
 
-    // Kiểm tra voucher hợp lệ và còn hàng
+    // Kiểm tra voucher hợp lệ từ DB (Giữ nguyên logic cực kỳ tốt này của bạn kia)
     const { data: voucher } = await client
       .from('voucher')
       .select('ma_voucher, so_luong_phat_hanh, so_luong_da_ban, ngay_kt, trang_thai')
@@ -81,161 +125,127 @@ export class OrdersService {
     const conLai = voucher.so_luong_phat_hanh - voucher.so_luong_da_ban;
     if (conLai <= 0) throw new BadRequestException('Voucher đã hết số lượng.');
 
-    // Kiểm tra xem item đã trong giỏ chưa, nếu rồi thì cập nhật số lượng
-    const { data: existing } = await client
-      .from('chi_tiet_gio_hang')
-      .select('ma_ctgh, so_luong_mua')
-      .eq('ma_kh', maKh)
-      .eq('ma_voucher', dto.ma_voucher)
-      .single();
+    // Tính toán số lượng dự kiến trên Redis
+    const currentQtyStr = await redisClient.hget(cartKey, dto.ma_voucher);
+    const currentQty = currentQtyStr ? parseInt(currentQtyStr, 10) : 0;
+    const newQty = currentQty + dto.so_luong_mua;
+    
+    if (newQty > conLai) throw new BadRequestException(`Chỉ còn ${conLai} voucher trong kho.`);
 
-    if (existing) {
-      const newQty = existing.so_luong_mua + dto.so_luong_mua;
-      if (newQty > conLai) throw new BadRequestException(`Chỉ còn ${conLai} voucher trong kho.`);
+    // Ghi vào Redis an toàn
+    await redisClient.hincrby(cartKey, dto.ma_voucher, dto.so_luong_mua);
+    await redisClient.sadd('carts_to_sync', maKh);
+    await redisClient.expire(cartKey, 7 * 24 * 60 * 60);
 
-      const { error } = await client
-        .from('chi_tiet_gio_hang')
-        .update({ so_luong_mua: newQty })
-        .eq('ma_ctgh', existing.ma_ctgh);
-
-      if (error) throw new InternalServerErrorException(error.message);
-      return { message: 'Đã cập nhật số lượng trong giỏ hàng.' };
-    }
-
-    // Thêm mới vào giỏ
-    if (dto.so_luong_mua > conLai) throw new BadRequestException(`Chỉ còn ${conLai} voucher trong kho.`);
-
-    const { error } = await client.from('chi_tiet_gio_hang').insert({
-      ma_ctgh: `GH-${uuidv4().slice(0, 8).toUpperCase()}`,
-      ma_kh: maKh,
-      ma_voucher: dto.ma_voucher,
-      so_luong_mua: dto.so_luong_mua,
-    });
-
-    if (error) throw new InternalServerErrorException(error.message);
     return { message: 'Thêm vào giỏ hàng thành công.' };
   }
 
   // ─── GIỎ HÀNG: XÓA ──────────────────────────────────────────────────────────
   async removeFromCart(accessToken: string, maCtgh: string) {
-    const client = this.supabaseService.getClient();
+    const redisClient = this.redisService.getClient();
     const maKh = await this.getKhachHang(accessToken);
+    const cartKey = `cart:${maKh}`;
 
-    const { error } = await client
-      .from('chi_tiet_gio_hang')
-      .delete()
-      .eq('ma_ctgh', maCtgh)
-      .eq('ma_kh', maKh); // Bảo đảm chỉ xóa item của chính khách hàng đó
+    // Bóc tách ma_voucher từ chuỗi giả lập REDIS-{ma_voucher} đã trả về ở hàm getCart.
+    let maVoucherToRemove = maCtgh;
+    if (maCtgh.startsWith('REDIS-')) {
+      maVoucherToRemove = maCtgh.replace('REDIS-', '');
+    } else {
+      // Fallback nếu Client gửi lên ma_ctgh thật từ cache miss DB
+      const client = this.supabaseService.getClient();
+      const { data } = await client.from('chi_tiet_gio_hang').select('ma_voucher').eq('ma_ctgh', maCtgh).single();
+      if (data) maVoucherToRemove = data.ma_voucher;
+    }
 
-    if (error) throw new InternalServerErrorException(error.message);
+    await redisClient.hdel(cartKey, maVoucherToRemove);
+    await redisClient.sadd('carts_to_sync', maKh);
+
     return { message: 'Đã xóa khỏi giỏ hàng.' };
   }
 
   // ─── TẠO ĐƠN HÀNG & THANH TOÁN MÔ PHỎNG ────────────────────────────────────
   async createOrder(accessToken: string, dto: CreateOrderDto) {
     const client = this.supabaseService.getClient();
+    const redisClient = this.redisService.getClient();
     const maKh = await this.getKhachHang(accessToken);
 
-    // Lấy toàn bộ giỏ hàng
-    const { data: cartItems, error: cartError } = await client
-      .from('chi_tiet_gio_hang')
-      .select(`ma_ctgh, so_luong_mua, ma_voucher, voucher ( gia_ban, so_luong_phat_hanh, so_luong_da_ban, trang_thai, ngay_kt )`)
-      .eq('ma_kh', maKh);
+    // 1. Áp dụng Redis Lock chống thao tác đúp (Race condition)
+    const lockKey = `lock:order:${maKh}`;
+    const acquireLock = await redisClient.set(lockKey, 'locked', 'PX', 5000, 'NX');
+    if (!acquireLock) throw new BadRequestException('Hệ thống đang xử lý, vui lòng không click liên tiếp!');
 
-    if (cartError) throw new InternalServerErrorException(cartError.message);
-    if (!cartItems || cartItems.length === 0) throw new BadRequestException('Giỏ hàng trống.');
+    try {
+      // 2. Lấy giỏ hàng từ hàm getCart (đã bao gồm luồng Redis -> Supabase)
+      const { data: cartItems, tong_tien } = await this.getCart(accessToken);
+      if (cartItems.length === 0) throw new BadRequestException('Giỏ hàng trống.');
 
-    const now = new Date().toISOString();
-    let tongTien = 0;
-    const validItems: any[] = [];
+      const now = new Date().toISOString();
+      const itemsToProcess: { ma_voucher: string; so_luong_mua: number }[] = [];
 
-    // Validate từng item trong giỏ
-    for (const item of cartItems) {
-      const v = item.voucher as any;
-      if (v.trang_thai !== 'active') throw new BadRequestException(`Voucher ${item.ma_voucher} không còn hoạt động.`);
-      if (v.ngay_kt < now) throw new BadRequestException(`Voucher ${item.ma_voucher} đã hết hạn bán.`);
-
-      const conLai = v.so_luong_phat_hanh - v.so_luong_da_ban;
-      if (item.so_luong_mua > conLai) {
-        throw new BadRequestException(`Voucher ${item.ma_voucher} chỉ còn ${conLai} trong kho.`);
+      // Validate trước khi gọi RPC
+      for (const item of cartItems) {
+        const v = item.voucher as any;
+        if (!v || v.trang_thai !== 'active') throw new BadRequestException(`Voucher ${item.ma_voucher} không còn hoạt động.`);
+        if (v.ngay_kt < now) throw new BadRequestException(`Voucher ${item.ma_voucher} đã hết hạn bán.`);
+        const conLai = v.so_luong_phat_hanh - v.so_luong_da_ban;
+        if (item.so_luong_mua > conLai) throw new BadRequestException(`Voucher ${item.ma_voucher} chỉ còn ${conLai} trong kho.`);
+        
+        itemsToProcess.push({ ma_voucher: item.ma_voucher, so_luong_mua: item.so_luong_mua });
       }
-      tongTien += v.gia_ban * item.so_luong_mua;
-      validItems.push(item);
-    }
 
-    // Tạo đơn hàng
-    const maDh = `DH-${uuidv4().slice(0, 8).toUpperCase()}`;
-    const { error: dhError } = await client.from('don_hang').insert({
-      ma_dh: maDh,
-      ma_kh: maKh,
-      ten_don_hang: dto.ten_don_hang ?? null,
-      tong_tien: tongTien,
-      phuong_thuc_thanh_toan: dto.phuong_thuc_thanh_toan,
-      trang_thai_thanh_toan: 'thanh_cong', // Mô phỏng: thanh toán luôn thành công
-    });
-    if (dhError) throw new InternalServerErrorException(dhError.message);
+      const maDh = `DH-${uuidv4().slice(0, 8).toUpperCase()}`;
 
-    // Tạo chi tiết đơn hàng và phát hành voucher code
-    const chiTietList: any[] = [];
-    const voucherCodesInsert: any[] = [];
+      // 3. Khôi phục lại Stored Procedure để đảm bảo Transaction toàn vẹn dữ liệu
+      const { error: rpcError } = await client.rpc('create_order_transaction', {
+        p_ma_dh: maDh,
+        p_ma_kh: maKh,
+        p_ten_don_hang: dto.ten_don_hang ?? null,
+        p_phuong_thuc_thanh_toan: dto.phuong_thuc_thanh_toan,
+        p_items: itemsToProcess,
+      });
 
-    for (const item of validItems) {
-      const v = item.voucher as any;
-      const maCtdh = `CTDH-${uuidv4().slice(0, 8).toUpperCase()}`;
+      if (rpcError) throw new BadRequestException(rpcError.message || 'Lỗi xử lý đơn hàng tại Database');
 
-      chiTietList.push({
-        ma_ctdh: maCtdh,
+      // 4. Sinh mã Voucher vật lý
+      const voucherCodesInsert: any[] = [];
+      for (const item of cartItems) {
+        for (let i = 0; i < item.so_luong_mua; i++) {
+          voucherCodesInsert.push({
+            ma_voucher_code: `VC-${uuidv4().slice(0, 12).toUpperCase()}`,
+            ma_voucher: item.ma_voucher,
+            ma_dh: maDh,
+            trang_thai: 'chua_su_dung',
+            chuoi_ma_bao_mat: uuidv4().replace(/-/g, ''), 
+          });
+        }
+      }
+      const { error: vcError } = await client.from('voucher_phat_hanh').insert(voucherCodesInsert);
+      if (vcError) throw new InternalServerErrorException(vcError.message);
+
+      // 5. Ghi lịch sử giao dịch
+      const maLs = `LS-${uuidv4().slice(0, 8).toUpperCase()}`;
+      await client.from('lich_su_giao_dich').insert({
+        ma_ls: maLs,
         ma_dh: maDh,
-        ma_voucher: item.ma_voucher,
-        so_luong_mua: item.so_luong_mua,
-        don_gia_mua: v.gia_ban,
+        so_tien: tong_tien,
+        phuong_thuc_thanh_toan: dto.phuong_thuc_thanh_toan,
+        trang_thai_thanh_toan: 'thanh_cong',
       });
 
-      // Phát hành code voucher duy nhất cho từng lượt mua (RB-06: phải unique & khó đoán)
-      for (let i = 0; i < item.so_luong_mua; i++) {
-        voucherCodesInsert.push({
-          ma_voucher_code: `VC-${uuidv4().slice(0, 12).toUpperCase()}`,
-          ma_voucher: item.ma_voucher,
-          ma_dh: maDh,
-          trang_thai: 'chua_su_dung',
-          chuoi_ma_bao_mat: uuidv4().replace(/-/g, ''), // Chuỗi bảo mật 32 ký tự
-        });
-      }
+      // 6. Xóa giỏ hàng trên Redis
+      const cartKey = `cart:${maKh}`;
+      await redisClient.del(cartKey);
+      await redisClient.sadd('carts_to_sync', maKh); 
 
-      // Cập nhật số lượng đã bán (RB-11 & RB-15: kiểm soát tồn kho)
-      await client.rpc('increment_so_luong_da_ban', {
-        p_ma_voucher: item.ma_voucher,
-        p_so_luong: item.so_luong_mua,
-      });
+      return {
+        message: 'Đặt hàng và thanh toán thành công.',
+        ma_dh: maDh,
+        tong_tien: tong_tien,
+        so_voucher_code_phat_hanh: voucherCodesInsert.length,
+      };
+    } finally {
+      await redisClient.del(lockKey); // Luôn nhả lock 
     }
-
-    // Insert chi tiết đơn hàng
-    const { error: ctdhError } = await client.from('chi_tiet_don_hang').insert(chiTietList);
-    if (ctdhError) throw new InternalServerErrorException(ctdhError.message);
-
-    // Phát hành voucher code (RB-05: chỉ phát hành sau khi thanh toán thành công)
-    const { error: vcError } = await client.from('voucher_phat_hanh').insert(voucherCodesInsert);
-    if (vcError) throw new InternalServerErrorException(vcError.message);
-
-    // Ghi lịch sử giao dịch
-    const maLs = `LS-${uuidv4().slice(0, 8).toUpperCase()}`;
-    await client.from('lich_su_giao_dich').insert({
-      ma_ls: maLs,
-      ma_dh: maDh,
-      so_tien: tongTien,
-      phuong_thuc_thanh_toan: dto.phuong_thuc_thanh_toan,
-      trang_thai_thanh_toan: 'thanh_cong',
-    });
-
-    // Xóa giỏ hàng sau khi đặt hàng thành công
-    await client.from('chi_tiet_gio_hang').delete().eq('ma_kh', maKh);
-
-    return {
-      message: 'Đặt hàng và thanh toán thành công.',
-      ma_dh: maDh,
-      tong_tien: tongTien,
-      so_voucher_code_phat_hanh: voucherCodesInsert.length,
-    };
   }
 
   // ─── VÍ VOUCHER (MY VOUCHERS) ────────────────────────────────────────────────

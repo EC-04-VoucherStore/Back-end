@@ -1,9 +1,9 @@
 // src/modules/orders/services/cart-sync.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { RedisService } from '../../../common/redis/redis.service';
-import { SupabaseService } from '../../../common/supabase/supabase.service';
-import { CartService } from './carts.service';
+import { RedisService } from '../../common/redis/redis.service';
+import { OrdersService } from './orders.service';
+import { SupabaseService } from '../../supabase/supabase.service';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class CartSyncService {
   constructor(
     private readonly redisService: RedisService,
     private readonly supabaseService: SupabaseService,
-    private readonly cartService: CartService,
+    private readonly ordersService: OrdersService,
   ) {}
 
   // Chạy tự động mỗi 30 phút. Bạn có thể đổi thành EVERY_5_MINUTES nếu muốn
@@ -35,7 +35,7 @@ export class CartSyncService {
 
       // 2. Lặp qua từng user để đồng bộ
       for (const maKh of usersToSync) {
-        const cartItems = await this.cartService.getCart(maKh);
+        const { data: cartItems } = await this.ordersService.getCart(maKh);
         
         // Bắt đầu quá trình đồng bộ cho user này
         if (cartItems.length === 0) {
